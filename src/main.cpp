@@ -1,58 +1,52 @@
-#include "common.hpp"
-#include "core/filemgr/FileMgr.hpp"
-#include "core/hooking/Hooking.hpp"
-#include "core/memory/ModuleMgr.hpp"
-#include "core/renderer/Renderer.hpp"
-#include "game/frontend/GUI.hpp"
-#include "game/pointers/Pointers.hpp"
+#include <Windows.h>
+#include "gui/renderer.hpp"
+#include "hooks/hooking.hpp"
+#include "memory/pointers.hpp"
+#include "logging/logger.hpp"
+#include "gui/test_ui.hpp"
 
 
-namespace NewBase
+static DWORD WINAPI MainThread(LPVOID)
 {
-	DWORD Main(void*)
-	{
-		const auto documents = std::filesystem::path(std::getenv("USERPROFILE")) / "Documents";
-		FileMgr::Init(documents / "HellBase");
+    MSG msg = {};
 
-		LogHelper::Init("henlo", FileMgr::GetProjectFile("./cout.log").Path());
+	Logger::Log(INFO, "Initializing...");
 
-		if (!ModuleMgr.LoadModules())
-			goto unload;
-		if (!Pointers.Init())
-			goto unload;
-		if (!Renderer::Init())
-			goto unload;
-		GUI::Init();
-		Hooking::Init();
+    g_pointers.Init();
+    Renderer::Init();
+    Hooking::Init();
+	GUI::Init();
 
-		while (g_Running)
-		{
-			std::this_thread::sleep_for(100ms);
-		}
+    // test loop
+    while (true)
+    {
+        if (GetAsyncKeyState(VK_INSERT) & 1)
+			GUI::Toggle();
 
-	unload:
-		Hooking::Destroy();
-		Renderer::Destroy();
-		LogHelper::Destroy();
+        while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+        {
 
-		CloseHandle(g_MainThread);
-		FreeLibraryAndExitThread(g_DllInstance, EXIT_SUCCESS);
+            if (msg.message == WM_QUIT)
+                goto unload;
 
-		return EXIT_SUCCESS;
-	}
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+        Sleep(10);
+    }
+
+unload:
+    Logger::Log(INFO, "Shutting down");
+    Hooking::Destroy();
+    Renderer::Destroy();
+    return 0;
 }
 
-BOOL WINAPI DllMain(HINSTANCE dllInstance, DWORD reason, void*)
+BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID)
 {
-	using namespace NewBase;
-
-	DisableThreadLibraryCalls(dllInstance);
-
-	if (reason == DLL_PROCESS_ATTACH)
-	{
-		g_DllInstance = dllInstance;
-
-		g_MainThread = CreateThread(nullptr, 0, Main, nullptr, 0, &g_MainThreadId);
-	}
-	return true;
+    if (reason == DLL_PROCESS_ATTACH) {
+        DisableThreadLibraryCalls(hModule);
+        CreateThread(nullptr, 0, MainThread, nullptr, 0, nullptr);
+    }
+    return TRUE;
 }

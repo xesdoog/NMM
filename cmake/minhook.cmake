@@ -1,12 +1,10 @@
-include(FetchContent)
-
-set(LIB_NAME "minhook")
-message(STATUS "Setting up ${LIB_NAME}")
-
 FetchContent_Declare(
-    ${LIB_NAME}
-    GIT_REPOSITORY https://github.com/TsudaKageyu/minhook.git
-    GIT_TAG        f5485b8454544c2f034c78f8f127c1d03dea3636
-	GIT_PROGRESS TRUE
+    minhook
+    GIT_REPOSITORY https://github.com/YimMenu/minhook.git
+    GIT_TAG        902ab63e0a771547961e132ccc0700d62e2a1423
+    GIT_PROGRESS TRUE
 )
-FetchContent_MakeAvailable(${LIB_NAME})
+
+message("Fetching MinHook...")
+FetchContent_MakeAvailable(minhook)
+set_property(TARGET minhook PROPERTY CXX_STANDARD 23)
