@@ -175,10 +175,10 @@ bool Renderer::InitImpl()
 	g_pointers.AcquireNextImageKHR = reinterpret_cast<void*>(vkGetDeviceProcAddr(m_VkFakeDevice, "vkAcquireNextImageKHR"));
 	g_pointers.AcquireNextImage2KHR = reinterpret_cast<void*>(vkGetDeviceProcAddr(m_VkFakeDevice, "vkAcquireNextImage2KHR"));
 
-	Logger::Log(INFO, std::format("QueuePresentKHR export: 0x{:X}", g_pointers.QueuePresentKHR));
-	Logger::Log(INFO, std::format("CreateSwapchainKHR export: 0x{:X}", g_pointers.CreateSwapchainKHR));
-	Logger::Log(INFO, std::format("AcquireNextImageKHR export: 0x{:X}", g_pointers.AcquireNextImageKHR));
-	Logger::Log(INFO, std::format("AcquireNextImage2KHR export: 0x{:X}", g_pointers.AcquireNextImage2KHR));
+	Logger::Log(INFO, std::format("QueuePresentKHR export: 0x{:X}", (uintptr_t)g_pointers.QueuePresentKHR));
+	Logger::Log(INFO, std::format("CreateSwapchainKHR export: 0x{:X}", (uintptr_t)g_pointers.CreateSwapchainKHR));
+	Logger::Log(INFO, std::format("AcquireNextImageKHR export: 0x{:X}", (uintptr_t)g_pointers.AcquireNextImageKHR));
+	Logger::Log(INFO, std::format("AcquireNextImage2KHR export: 0x{:X}", (uintptr_t)g_pointers.AcquireNextImage2KHR));
 
 	vkDestroyDevice(m_VkFakeDevice, m_VkAllocator);
 	m_VkFakeDevice = NULL;

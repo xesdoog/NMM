@@ -89,12 +89,4 @@ namespace Hooks
 
 		return CallWindowProc(g_pointers.WndProc, hWnd, uMsg, wParam, lParam);
 	}
-
-	/*
-	void __fastcall Game::MoneyFunction(void* rax, void* rcx)
-	{
-		g_pointers.PlayerCurrency = reinterpret_cast<Currency*>(rax);
-		return BaseHook::Get<Game::MoneyFunction, DetourHook<decltype(&MoneyFunction)>>()->Original()(rax, rcx);
-	}
-	*/
 }

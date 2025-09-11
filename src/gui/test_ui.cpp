@@ -1,6 +1,7 @@
 #include "gui/renderer.hpp"
 #include "gui/test_ui.hpp"
 #include "memory/pointers.hpp"
+#include "util/format_money.hpp"
 
 
 void GUI::InitImpl() {
@@ -13,26 +14,33 @@ void GUI::InitImpl() {
 
             ImGui::SetNextWindowSize(ImVec2(400, 400), ImGuiCond_Once);
             ImGui::Begin("Test Window", nullptr, ImGuiWindowFlags_NoTitleBar);
-            ImGui::Text("Hello from No Man's Sky!");
+            ImGui::Text("Test");
 			ImGui::Separator();
 			ImGui::Spacing();
 
             if (ImGui::Button("Get Currency Data")) {
-                auto curr = g_pointers.PlayerCurrency;
+                Currency* curr = g_pointers.PlayerCurrency;
 
-                if (curr && !IsBadReadPtr(curr, sizeof(Currency))) {
-					txt_buff = std::format(
+                if (!curr || IsBadReadPtr(curr, sizeof(Currency))) {
+                    txt_buff = "Currency data is not available! Try opening your inventory.";
+                }
+                else {
+	                txt_buff = std::format(
                         "Currency Data:\nUnits: {}\nNanites: {}\nQuicksilver: {}",
-                        curr->Units,
-                        curr->Nanites,
-                        curr->Quicksilver
+                        FormatMoney(curr->Units),
+                        FormatMoney(curr->Nanites),
+                        FormatMoney(curr->Quicksilver)
                     );
-                } else {
-                    txt_buff = "Currency pointer was null!";
                 }
             }
 
-			ImGui::TextWrapped("%s", txt_buff.c_str());
+            ImGui::SameLine();
+
+            if (ImGui::Button("Clear")) {
+                txt_buff.clear();
+            }
+
+            ImGui::TextWrapped("%s", txt_buff.c_str());
             ImGui::End();
         },
     -1);

@@ -1,7 +1,8 @@
 #include "hooking.hpp"
 #include "base_hook.hpp"
 #include "detour_hook.hpp"
-#include "hooks/hooks.hpp"
+#include "hooks.hpp"
+#include "currency_hook.hpp"
 #include "gui/renderer.hpp"
 #include "memory/pointers.hpp"
 #include "Logging/logger.hpp"
@@ -41,12 +42,17 @@ bool Hooking::InitImpl()
 	BaseHook::Add<Hooks::Vulkan::AcquireNextImageKHR>(new DetourHook("Vulkan::AcquireNextImageKHR", g_pointers.AcquireNextImageKHR, Hooks::Vulkan::AcquireNextImageKHR));
 
 	// WndProc
+	// no need for a detour we can just return CallWindowProc in the hook itself once we're done
 	// BaseHook::Add<Hooks::Window::WndProc>(new DetourHook("Window::WndProc", g_pointers.WndProc, Hooks::Window::WndProc));
 
-	// Game
-	// BaseHook::Add<Hooks::Game::MoneyFunction>(new DetourHook("Game::MoneyFunction", g_pointers.CurrencyFunc, Hooks::Game::MoneyFunction));
-
 	BaseHook::EnableAll();
+
+	if (InstallCurrencyInlineHook()) {
+		Logger::Log(INFO, "Currency inline hook installed");
+	}
+	else {
+		Logger::Log(ERR, "Failed to install currency inline hook");
+	}
 
 	auto mh_status = m_MinHook.ApplyQueued();
 
@@ -72,4 +78,5 @@ void Hooking::DestroyImpl()
 		delete it;
 	}
 	BaseHook::Hooks().clear();
+	UninstallCurrencyInlineHook();
 }

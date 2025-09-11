@@ -1,7 +1,6 @@
 #pragma once
 #include <vulkan/vulkan.h>
 #include <windows.h>
-#include "../game/classes/interloper.hpp"
 #include "game/classes/currency.hpp"
 
 
@@ -17,8 +16,7 @@ struct PointerData
 	WNDPROC WndProc;
 
 	// Game
-	GcPlayer* Interloper;
-	void* CurrencyFunc;
+	void* CurrencyInstruction; // mov ecx, [rax+0000B8C0]
 	Currency* PlayerCurrency;
 };
 

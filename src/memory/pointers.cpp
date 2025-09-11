@@ -22,14 +22,10 @@ bool Pointers::Init() {
 
     auto scanner = PatternScanner(nms);
 
-    constexpr auto plyr_ptrn = Pattern<"48 8B 0D ?? ?? ?? ??">("Interloper");
-    scanner.Add(plyr_ptrn, [this](PointerCalculator ptr) {
-        Interloper = ptr.As<GcPlayer*>();
-    });
-
-    constexpr auto currency_ptrn = Pattern<"8B 88 C0 B8 00 00 89 8F">("PlayerCurrency");
+    constexpr auto currency_ptrn = Pattern<"8B 88 C0 B8 00 00 89 8F">("CurrencyInstruction");
     scanner.Add(currency_ptrn, [this](PointerCalculator ptr) {
-        PlayerCurrency = ptr.As<Currency*>();
+        CurrencyInstruction = ptr.As<void*>();
+        Logger::Log(INFO, std::format("Currency instruction found at 0x{:X}", (uintptr_t)CurrencyInstruction));
     });
 
     if (!scanner.Scan())

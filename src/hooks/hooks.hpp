@@ -14,10 +14,4 @@ namespace Hooks
 	{
 		extern LRESULT WndProc(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lparam);
 	}
-
-	/*
-	namespace Game {
-		void __fastcall MoneyFunction(void* rax, void* rcx);
-	}
-	*/
 }
