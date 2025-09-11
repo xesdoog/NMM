@@ -3,7 +3,6 @@
 #include "detour_hook.hpp"
 #include "hooks.hpp"
 #include "currency_hook.hpp"
-#include "gui/renderer.hpp"
 #include "memory/pointers.hpp"
 #include "Logging/logger.hpp"
 

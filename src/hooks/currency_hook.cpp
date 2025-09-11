@@ -33,7 +33,7 @@ static void* VirtualAllocNear(void* hint, SIZE_T size) {
 // TODO: make this part of Hooks as InlineHook
 bool InstallCurrencyInlineHook()
 {
-    // Credit to Blind Distorian on FearlessRevolution as well as contributors to their ct
+    // Credit to Blind Distortion on FearlessRevolution as well as contributors to their ct
     // including our notorious friend gir489.
     // I have no idea what the fuck I'm doing.
     // https://fearlessrevolution.com/viewtopic.php?t=30442

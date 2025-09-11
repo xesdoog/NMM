@@ -1,5 +1,4 @@
 #pragma once
-#include "memory/pointers.hpp"
 
 struct Currency {
 	char pad_0000[0xB8BC];
