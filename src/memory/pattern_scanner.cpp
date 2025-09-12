@@ -1,7 +1,7 @@
+#include <future>
 #include "pattern_scanner.hpp"
 #include "module.hpp"
 #include "logging/logger.hpp"
-#include <future>
 
 
 PatternScanner::PatternScanner(const Module* module) :

@@ -1,6 +1,6 @@
 #pragma once
+#include <common.hpp>
 #include "util/str2hex.hpp"
-#include "util/common.hpp"
 #include "pattern_hash.hpp"
 
 

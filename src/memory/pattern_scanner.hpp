@@ -1,8 +1,8 @@
 #pragma once
-#include "pattern.hpp"
-#include "pointer_calculator.hpp"
 #include <functional>
 #include <vector>
+#include "pattern.hpp"
+#include "pointer_calculator.hpp"
 
 class Module;
 using PatternFunc = std::function<void(PointerCalculator)>;

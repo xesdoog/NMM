@@ -1,7 +1,7 @@
 #pragma once
-
-#include "pointer_calculator.hpp"
+#include <common.hpp>
 #include <winternl.h>
+#include "pointer_calculator.hpp"
 
 
 class Module

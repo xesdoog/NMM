@@ -54,17 +54,14 @@ bool Hooking::InitImpl()
 	}
 
 	auto mh_status = m_MinHook.ApplyQueued();
-
-	if (mh_status == MH_OK)
-	{
-		Logger::Log(INFO, "Hooks applied");
-		return true;
-	}
-	else
+	if (mh_status != MH_OK)
 	{
 		Logger::Log(ERR, "Failed to apply hooks!");
 		return false;
 	}
+
+	Logger::Log(INFO, "Hooks applied");
+	return true;
 }
 
 void Hooking::DestroyImpl()
@@ -76,6 +73,7 @@ void Hooking::DestroyImpl()
 	{
 		delete it;
 	}
+
 	BaseHook::Hooks().clear();
 	UninstallCurrencyInlineHook();
 }

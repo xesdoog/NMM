@@ -4,11 +4,11 @@
 #include <memory/pointers.hpp>
 #include <windows.h>
 #include <tlhelp32.h>
-#include "util/common.hpp"
+#include <common.hpp>
 #include "renderer.hpp"
+#include "gui.hpp"
+#include "hooks/hooks.hpp"
 #include "logging/logger.hpp"
-#include "test_ui.hpp"
-#include <hooks/hooks.hpp>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 
@@ -49,6 +49,7 @@ Renderer::~Renderer()
 
 void Renderer::DestroyImpl()
 {
+	GUI::Close();
 	SetWindowLongPtr(g_pointers.Hwnd, GWLP_WNDPROC, (LONG_PTR)g_pointers.WndProc);
 	ImGui_ImplVulkan_Shutdown();
 	ImGui_ImplWin32_Shutdown();
@@ -168,8 +169,6 @@ bool Renderer::InitImpl()
 		return false;
 	}
 
-	Logger::Log(INFO, "Created fake vkCreateDevice");
-
 	g_pointers.QueuePresentKHR = reinterpret_cast<void*>(vkGetDeviceProcAddr(m_VkFakeDevice, "vkQueuePresentKHR"));
 	g_pointers.CreateSwapchainKHR = reinterpret_cast<void*>(vkGetDeviceProcAddr(m_VkFakeDevice, "vkCreateSwapchainKHR"));
 	g_pointers.AcquireNextImageKHR = reinterpret_cast<void*>(vkGetDeviceProcAddr(m_VkFakeDevice, "vkAcquireNextImageKHR"));
@@ -185,7 +184,6 @@ bool Renderer::InitImpl()
 
 	ImGui::CreateContext();
 	ImGui_ImplWin32_Init(g_pointers.Hwnd);
-
 	Logger::Log(INFO, "Vulkan renderer has finished initializing.");
 
 	return true;
@@ -530,6 +528,7 @@ void Renderer::VkOnPresentImpl(VkQueue queue, const VkPresentInfoKHR* pPresentIn
             info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             info.renderPass = m_VkRenderPass;
             info.framebuffer = fd->Framebuffer;
+
             if (m_VkImageExtent.width == 0 || m_VkImageExtent.height == 0)
             {
                 info.renderArea.extent.width = 1920;

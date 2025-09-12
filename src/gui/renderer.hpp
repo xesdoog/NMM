@@ -101,9 +101,15 @@ public:
 
 		GetInstance().m_VkDevice = device;
 	}
+
 	static void VkSetScreenSize(VkExtent2D extent)
 	{
 		GetInstance().m_VkImageExtent = extent;
+	}
+
+	static VkExtent2D GetScreenSize()
+	{
+		return GetInstance().m_VkImageExtent;
 	}
 
 	static VkDevice VkGetDevice()

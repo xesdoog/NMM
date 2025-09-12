@@ -1,0 +1,103 @@
+#include "gui.hpp"
+#include "renderer.hpp"
+#include "memory/pointers.hpp"
+#include "game/features/self.hpp"
+#include "game/features/ship.hpp"
+
+
+void GUI::InitImpl() {
+	auto size = Renderer::GetScreenSize();
+    size.width = std::max((int)size.width, 1920);
+    size.height = std::max((int)size.height, 1080);
+    SetWindowSize(size);
+
+	AddTab("Self", [] { Self::Draw(); });
+	AddTab("Ship", [] { Ship::Draw(); });
+
+    Renderer::AddRendererCallBack([&] { Draw(); }, -1);
+}
+
+bool GUI::AddTabImpl(const std::string& name, GuiCallBack&& callback)
+{
+    if (m_GuiCallbacks.contains(name))
+    {
+        return false;
+    }
+
+    return m_GuiCallbacks.insert({ name, callback }).second;
+}
+
+void GUI::DrawImpl()
+{
+    if (!m_IsOpen)
+        return;
+
+    ImGui::SetNextWindowSize(m_WindowSize, ImGuiCond_Once);
+    ImGui::SetNextWindowPos(m_WindowPos, ImGuiCond_Once);
+    ImGui::SetNextWindowBgAlpha(0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    if (ImGui::Begin("##main", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground))
+    {
+        ImGui::SetNextWindowBgAlpha(0.7f);
+        if (ImGui::BeginChild("##header", ImVec2(m_WindowSize.x - 10.0f, 60.0f), ImGuiChildFlags_Border))
+        {
+            float textWidth = ImGui::CalcTextSize("NMS Test Trainer").x;
+            float avail = ImGui::GetWindowWidth();
+            ImGui::Dummy(ImVec2((avail - textWidth) * 0.5f, 1));
+            ImGui::SameLine();
+            ImGui::Text("NMS Test Trainer");
+
+            if (ImGui::Button("Unload"))
+                g_Running = false;
+        }
+        ImGui::EndChild();
+
+        if (ImGui::BeginChild("##sidebar", ImVec2(m_WindowSize.x * 0.2f, 0), ImGuiChildFlags_None))
+        {
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 40);
+            for (const auto& [name, callback] : m_GuiCallbacks)
+            {
+                bool isActive = (!m_ActiveTab.m_name.empty() && (name.c_str() == m_ActiveTab.m_name.c_str()));
+                if (isActive)
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.5f, 0.8f, 1.0f));
+
+                if (ImGui::Button(name.c_str(), ImVec2(100, 0)))
+                    SetActiveTab(name, callback);
+
+                if (isActive)
+                    ImGui::PopStyleColor();
+            }
+            ImGui::PopStyleVar();
+        }
+        ImGui::EndChild();
+
+        ImGui::SameLine();
+
+        if (m_ActiveTab.m_callback)
+        {
+            ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.1f, 0.1f, 0.1f, 0.7f));
+            if (ImGui::BeginChild("##tabfuncs", ImVec2(0, 0), ImGuiChildFlags_AutoResizeY | ImGuiChildFlags_Border))
+                m_ActiveTab.m_callback();
+
+            ImGui::PopStyleColor();
+            ImGui::EndChild();
+        }
+    }
+    ImGui::PopStyleVar();
+    ImGui::End();
+}
+
+void GUI::OverrideMouse()
+{
+    auto& io = ImGui::GetIO();
+    auto isOpen = GUI::IsOpen();
+
+    io.MouseDrawCursor = isOpen;
+    isOpen ? io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse : io.ConfigFlags |= ImGuiConfigFlags_NoMouse;
+}
+
+void GUI::CloseImpl()
+{
+    m_IsOpen = false;
+    OverrideMouse();
+}

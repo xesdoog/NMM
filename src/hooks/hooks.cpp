@@ -1,14 +1,14 @@
 #include "hooks/detour_hook.hpp"
 #include "hooks/hooks.hpp"
 #include "gui/renderer.hpp"
-#include "gui/test_ui.hpp"
+#include "gui/gui.hpp"
 #include "memory/pointers.hpp"
 
 
 namespace Hooks
 {
 	VkResult VKAPI_CALL Vulkan::QueuePresentKHR(VkQueue queue, const VkPresentInfoKHR* pPresentInfo)
-	{
+	{		
 		Renderer::VkOnPresent(queue, pPresentInfo);
 		return BaseHook::Get<Vulkan::QueuePresentKHR, DetourHook<decltype(&QueuePresentKHR)>>()->Original()(queue, pPresentInfo);
 	}
@@ -19,11 +19,15 @@ namespace Hooks
 		const VkAllocationCallbacks* pAllocator,
 		VkSwapchainKHR* pSwapchain)
 	{
+		Logger::Log(DEBUG, "CreateSwapchainKHR called");
+		Logger::Log(DEBUG, std::format("pCreateInfo: 0x{:X}", (uintptr_t)pCreateInfo));
+		// what the fuck
 		if (pCreateInfo)
 		{
 			Renderer::VkSetDevice(device);
 			Renderer::VkCleanupRenderTarget();
 			Renderer::VkSetScreenSize(pCreateInfo->imageExtent);
+			Logger::Log(INFO, std::format("Swapchain created with size: {}x{}", pCreateInfo->imageExtent.width, pCreateInfo->imageExtent.height));
 		}
 
 		return BaseHook::Get<Vulkan::CreateSwapchainKHR, DetourHook<decltype(&CreateSwapchainKHR)>>()->Original()(device, pCreateInfo, pAllocator, pSwapchain);

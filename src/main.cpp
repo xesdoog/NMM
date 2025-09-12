@@ -1,52 +1,52 @@
 #include <Windows.h>
+#include <common.hpp>
 #include "gui/renderer.hpp"
 #include "hooks/hooking.hpp"
 #include "memory/pointers.hpp"
 #include "logging/logger.hpp"
-#include "gui/test_ui.hpp"
+#include "gui/gui.hpp"
 
 
 static DWORD WINAPI MainThread(LPVOID)
 {
-    MSG msg = {};
+    Logger::Log(INFO, "Initializing...");
+    
+    if (!g_pointers.Init())
+        goto unload;
 
-	Logger::Log(INFO, "Initializing...");
+    if (!Renderer::Init())
+        goto unload;
 
-    g_pointers.Init();
-    Renderer::Init();
-    Hooking::Init();
+    if (!Hooking::Init())
+        goto unload;
+
 	GUI::Init();
 
     // test loop
-    while (true)
+    while (g_Running)
     {
         if (GetAsyncKeyState(VK_INSERT) & 1)
-			GUI::Toggle();
-
-        while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
-        {
-
-            if (msg.message == WM_QUIT)
-                goto unload;
-
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
+            GUI::Toggle();
         Sleep(10);
     }
 
 unload:
     Logger::Log(INFO, "Shutting down");
-    Hooking::Destroy();
     Renderer::Destroy();
-    return 0;
+    Hooking::Destroy();
+    FreeLibraryAndExitThread(g_DllInstance, EXIT_SUCCESS);
+    return EXIT_SUCCESS;
 }
 
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID)
+BOOL WINAPI DllMain(HINSTANCE dllInstance, DWORD reason, void*)
 {
-    if (reason == DLL_PROCESS_ATTACH) {
-        DisableThreadLibraryCalls(hModule);
-        CreateThread(nullptr, 0, MainThread, nullptr, 0, nullptr);
+    DisableThreadLibraryCalls(dllInstance);
+
+    if (reason == DLL_PROCESS_ATTACH)
+    {
+        g_DllInstance = dllInstance;
+        g_MainThread = CreateThread(nullptr, 0, MainThread, nullptr, 0, &g_MainThreadId);
     }
-    return TRUE;
+
+    return true;
 }

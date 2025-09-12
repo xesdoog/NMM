@@ -1,11 +1,10 @@
 #pragma once
-#include "base_hook.hpp"
-#include "memory/pointer_calculator.hpp"
-
 #include <MinHook.h>
 #include <string_view>
 #include <stdexcept>
 #include <format>
+#include "base_hook.hpp"
+#include "memory/pointer_calculator.hpp"
 
 
 template<typename T = int*>

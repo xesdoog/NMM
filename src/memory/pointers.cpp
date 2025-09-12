@@ -33,11 +33,9 @@ bool Pointers::Init() {
         Logger::Log(ERR, "Some game patterns could not be found, unloading.");
         return false;
     }
-    else
-    {
-        Logger::Log(INFO, "Initial pointer scan complete");
-		return true;
-    }
+
+    Logger::Log(INFO, "Initial pointer scan complete");
+	return true;
 }
 
 bool Pointers::LateInit() 
