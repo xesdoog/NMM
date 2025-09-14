@@ -11,14 +11,14 @@ void GUI::InitImpl() {
     size.height = std::max((int)size.height, 1080);
     SetWindowSize(size);
 
-	AddTab(ICON_FA_USER, [] { Self::Draw(); });
-	AddTab(ICON_FA_SPACE_SHUTTLE, [] { Ship::Draw(); });
-	AddTab(ICON_FA_COG, [] { Ship::Draw(); });
+	AddTab(ICON_FA_USER, [] { Self::Draw(); }, "Player");
+	AddTab(ICON_FA_SPACE_SHUTTLE, [] { Ship::Draw(); }, "Spaceship");
+	AddTab(ICON_FA_COG, [] { Ship::Draw(); }, "Settings");
 
     Renderer::AddRendererCallBack([&] { Draw(); }, -1);
 }
 
-bool GUI::AddTabImpl(const std::string& name, GuiCallBack&& callback)
+bool GUI::AddTabImpl(const std::string& name, GuiCallBack&& callback, std::optional<std::string> hint)
 {
     for (const auto& tab : m_Tabs)
     {
@@ -26,7 +26,7 @@ bool GUI::AddTabImpl(const std::string& name, GuiCallBack&& callback)
             return false;
     }
 
-    m_Tabs.push_back({ name, callback });
+    m_Tabs.push_back({ name, callback, hint });
     return true;
 }
 
@@ -42,7 +42,7 @@ void GUI::DrawImpl()
     if (ImGui::Begin("##main", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground))
     {
         ImGui::SetNextWindowBgAlpha(0.8f);
-        if (ImGui::BeginChild("##header", ImVec2(m_WindowSize.x - 10.0f, 80.0f), ImGuiChildFlags_Border))
+        if (ImGui::BeginChild("##header", ImVec2(m_WindowSize.x - 10.0f, 70.0f), ImGuiChildFlags_Border))
         {
             float textWidth = ImGui::CalcTextSize("NMS Test Trainer").x;
             float avail = ImGui::GetWindowWidth();
@@ -69,8 +69,14 @@ void GUI::DrawImpl()
                     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
 
                 if (ImGui::Button(tab.m_name.c_str(), ImVec2(btn_width, 0)))
-                    SetActiveTab(tab.m_name, tab.m_callback);
-
+                {
+                    if (isActive)
+                        m_ActiveTab = {};
+                    else
+                        SetActiveTab(tab.m_name, tab.m_callback, tab.m_hint);
+                }
+                if (ImGui::IsItemHovered() && tab.m_hint.has_value())
+                    ImGui::SetTooltip(tab.m_hint.value().c_str());
                 ImGui::PopStyleColor();
             }
             ImGui::PopStyleVar();

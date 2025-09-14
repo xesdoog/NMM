@@ -7,6 +7,7 @@ using GuiCallBack = std::function<void()>;
 struct Tab {
 	std::string m_name;
 	GuiCallBack m_callback;
+	std::optional<std::string> m_hint;
 };
 
 class GUI final
@@ -34,9 +35,9 @@ public:
 		return ImGui::GetIO().WantTextInput;
 	}
 
-	static bool AddTab(const std::string& name, GuiCallBack&& callback)
+	static bool AddTab(const std::string& name, GuiCallBack&& callback, std::optional<std::string> hint)
 	{
-		return GetInstance().AddTabImpl(name, std::move(callback));
+		return GetInstance().AddTabImpl(name, std::move(callback), hint);
 	}
 
 	static void Draw()
@@ -44,10 +45,13 @@ public:
 		GetInstance().DrawImpl();
 	}
 
-	static void SetActiveTab(std::string name, GuiCallBack tabfunc) {
+	static void SetActiveTab(std::string name, GuiCallBack tabfunc, std::optional<std::string> hint) {
 		auto& tab = GetInstance().m_ActiveTab;
 		tab.m_name = name;
 		tab.m_callback = tabfunc;
+
+		if (hint.has_value())
+			tab.m_hint = hint;
 	}
 
 	static void SetWindowSize(VkExtent2D gameWindowSize) {
@@ -65,7 +69,7 @@ private:
 	void OverrideMouse();
 	void CloseImpl();
 	void DrawImpl();
-	bool AddTabImpl(const std::string& name, GuiCallBack&& callback);
+	bool AddTabImpl(const std::string& name, GuiCallBack&& callback, std::optional<std::string> hint);
 	ImVec2 m_WindowSize;
 	ImVec2 m_WindowPos = ImVec2(0.1f, 0.1f);
 	std::vector<Tab> m_Tabs;
