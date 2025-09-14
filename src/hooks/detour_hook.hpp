@@ -61,7 +61,6 @@ inline bool DetourHook<T>::Enable()
 	if (const auto result = MH_QueueEnableHook(m_TargetFunc); result != MH_OK)
 	{
 		throw std::runtime_error("Failed to queue hook to be enabled.");
-
 		return false;
 	}
 	return true;

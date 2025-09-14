@@ -35,8 +35,44 @@ void Self::SetQuicksilver(uint32_t amount) {
 	SetCurrency(&Currency::Quicksilver, amount);
 }
 
-void Self::DrawCurrency()
+void Self::DrawMain()
 {
+	ImGui::Spacing();
+
+	bool JPPClicked = ImGui::Checkbox("Infinite Jetpack", &InfiniteJetpack);
+	if (JPPClicked)
+	{
+		if (InfiniteJetpack)
+		{
+			g_pointers.JetPackFuelPatch->Apply();
+			g_pointers.JetPackFuelPatch2->Apply();
+		}
+		else
+		{
+			g_pointers.JetPackFuelPatch->Restore();
+			g_pointers.JetPackFuelPatch2->Restore();
+		}
+	}
+
+	bool InfStamClicked = ImGui::Checkbox("Infinite Stamina", &InfiniteStamina);
+	if (InfStamClicked)
+	{
+		if (InfiniteStamina)
+		{
+			g_pointers.PlayerStaminaPatch->Apply();
+		}
+		else
+		{
+			g_pointers.PlayerStaminaPatch->Restore();
+		}
+	}
+
+	// ImGui::Checkbox("Infinite Life Support", &InfiniteLifeSupport);
+
+	ImGui::Spacing();
+	ImGui::SeparatorText(ICON_FA_MONEY_BILL);
+	ImGui::Spacing();
+
 	if (!g_pointers.PlayerCurrency) {
 		ImGui::TextColored(ImVec4(1.0f, 0.01f, 0.01f, 0.9f), "Currency data is not available! Try opening your inventory.");
 		return;
@@ -57,7 +93,7 @@ void Self::DrawCurrency()
 	ImGui::SeparatorText("Nanites");
 	ImGui::Text(FormatMoney(nanites).c_str());
 	ImGui::Spacing();
-	if (ImGui::InputScalar("##NanitesScala", ImGuiDataType_U32, &nanites, &step, &stepFast))
+	if (ImGui::InputScalar("##NanitesScalar", ImGuiDataType_U32, &nanites, &step, &stepFast))
 		SetNanites(nanites);
 
 	ImGui::SeparatorText("Quicksilver");
@@ -67,20 +103,26 @@ void Self::DrawCurrency()
 		SetQuicksilver(quicksilver);
 }
 
-void Self::Draw() {
-	if (ImGui::BeginTabBar("##self"))
+void Self::DrawResources()
+{
+	ImGui::Text("Placeholder");
+}
+
+void Self::Draw()
+{
+	if (ImGui::BeginTabBar("selfTabBar"))
 	{
-		if (ImGui::BeginTabItem("Currency"))
+		if (ImGui::BeginTabItem("Main"))
 		{
-			DrawCurrency();
+			DrawMain();
+			ImGui::EndTabItem();
 		}
-		ImGui::EndTabItem();
 
 		if (ImGui::BeginTabItem("Resources"))
 		{
-			ImGui::Text("PlaceHolder");
+			DrawResources();
+			ImGui::EndTabItem();
 		}
-		ImGui::EndTabItem();
+		ImGui::EndTabBar();
 	}
-	ImGui::EndTabBar();
 }

@@ -2,6 +2,7 @@
 #include "game/classes/currency.hpp"
 #include "memory/pointers.hpp"
 
+
 class Self
 {
 public:
@@ -14,6 +15,11 @@ public:
 	static void SetUnits(uint32_t amount);
 	static void SetNanites(uint32_t amount);
 	static void SetQuicksilver(uint32_t amount);
-	static void DrawCurrency();
+	static void DrawMain();
+	static void DrawResources();
 	static void Draw();
+
+	static inline bool InfiniteJetpack = false;
+	static inline bool InfiniteStamina = false;
+	static inline bool InfiniteLifeSupport = false;
 };

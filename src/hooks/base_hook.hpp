@@ -35,6 +35,7 @@ public:
 		
 	template<auto HookFunc>
 	inline static void Add(BaseHook* hook);
+
 	template<auto HookFunc, typename T>
 	inline static T* Get();
 

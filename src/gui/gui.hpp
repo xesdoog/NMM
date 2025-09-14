@@ -4,10 +4,9 @@
 
 using GuiCallBack = std::function<void()>;
 
-struct ActiveTab
-{
-	static inline std::string m_name;
-	static inline GuiCallBack m_callback;
+struct Tab {
+	std::string m_name;
+	GuiCallBack m_callback;
 };
 
 class GUI final
@@ -67,10 +66,10 @@ private:
 	void CloseImpl();
 	void DrawImpl();
 	bool AddTabImpl(const std::string& name, GuiCallBack&& callback);
-	std::map<std::string, GuiCallBack> m_GuiCallbacks;
 	ImVec2 m_WindowSize;
 	ImVec2 m_WindowPos = ImVec2(0.1f, 0.1f);
-	ActiveTab m_ActiveTab;
+	std::vector<Tab> m_Tabs;
+	Tab m_ActiveTab;
 
 	static GUI& GetInstance()
 	{

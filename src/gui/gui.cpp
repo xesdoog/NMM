@@ -11,20 +11,23 @@ void GUI::InitImpl() {
     size.height = std::max((int)size.height, 1080);
     SetWindowSize(size);
 
-	AddTab("Self", [] { Self::Draw(); });
-	AddTab("Ship", [] { Ship::Draw(); });
+	AddTab(ICON_FA_USER, [] { Self::Draw(); });
+	AddTab(ICON_FA_SPACE_SHUTTLE, [] { Ship::Draw(); });
+	AddTab(ICON_FA_COG, [] { Ship::Draw(); });
 
     Renderer::AddRendererCallBack([&] { Draw(); }, -1);
 }
 
 bool GUI::AddTabImpl(const std::string& name, GuiCallBack&& callback)
 {
-    if (m_GuiCallbacks.contains(name))
+    for (const auto& tab : m_Tabs)
     {
-        return false;
+        if (tab.m_name == name)
+            return false;
     }
 
-    return m_GuiCallbacks.insert({ name, callback }).second;
+    m_Tabs.push_back({ name, callback });
+    return true;
 }
 
 void GUI::DrawImpl()
@@ -38,8 +41,8 @@ void GUI::DrawImpl()
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     if (ImGui::Begin("##main", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground))
     {
-        ImGui::SetNextWindowBgAlpha(0.7f);
-        if (ImGui::BeginChild("##header", ImVec2(m_WindowSize.x - 10.0f, 60.0f), ImGuiChildFlags_Border))
+        ImGui::SetNextWindowBgAlpha(0.8f);
+        if (ImGui::BeginChild("##header", ImVec2(m_WindowSize.x - 10.0f, 80.0f), ImGuiChildFlags_Border))
         {
             float textWidth = ImGui::CalcTextSize("NMS Test Trainer").x;
             float avail = ImGui::GetWindowWidth();
@@ -52,20 +55,23 @@ void GUI::DrawImpl()
         }
         ImGui::EndChild();
 
-        if (ImGui::BeginChild("##sidebar", ImVec2(m_WindowSize.x * 0.2f, 0), ImGuiChildFlags_None))
+        if (ImGui::BeginChild("##sidebar", ImVec2(m_WindowSize.x * 0.16f, 0), ImGuiChildFlags_None))
         {
             ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 40);
-            for (const auto& [name, callback] : m_GuiCallbacks)
+            for (const auto& tab : m_Tabs)
             {
-                bool isActive = (!m_ActiveTab.m_name.empty() && (name.c_str() == m_ActiveTab.m_name.c_str()));
-                if (isActive)
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.5f, 0.8f, 1.0f));
-
-                if (ImGui::Button(name.c_str(), ImVec2(100, 0)))
-                    SetActiveTab(name, callback);
+                bool isActive = (!m_ActiveTab.m_name.empty() && (tab.m_name == m_ActiveTab.m_name));
+                float btn_width = isActive ? 100.0f : 50.0f;
 
                 if (isActive)
-                    ImGui::PopStyleColor();
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.6f, 1.0f, 1.0f));
+                else
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
+
+                if (ImGui::Button(tab.m_name.c_str(), ImVec2(btn_width, 0)))
+                    SetActiveTab(tab.m_name, tab.m_callback);
+
+                ImGui::PopStyleColor();
             }
             ImGui::PopStyleVar();
         }
@@ -75,7 +81,7 @@ void GUI::DrawImpl()
 
         if (m_ActiveTab.m_callback)
         {
-            ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.1f, 0.1f, 0.1f, 0.7f));
+            ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.1f, 0.1f, 0.1f, 0.8f));
             if (ImGui::BeginChild("##tabfuncs", ImVec2(0, 0), ImGuiChildFlags_AutoResizeY | ImGuiChildFlags_Border))
                 m_ActiveTab.m_callback();
 

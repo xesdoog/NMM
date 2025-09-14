@@ -9,6 +9,7 @@
 #include "gui.hpp"
 #include "hooks/hooks.hpp"
 #include "logging/logger.hpp"
+#include "fonts/Fonts.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 
@@ -183,6 +184,7 @@ bool Renderer::InitImpl()
 	m_VkFakeDevice = NULL;
 
 	ImGui::CreateContext();
+	Fonts::Load();
 	ImGui_ImplWin32_Init(g_pointers.Hwnd);
 	Logger::Log(INFO, "Vulkan renderer has finished initializing.");
 
