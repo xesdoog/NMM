@@ -2,16 +2,21 @@
 #include <common.hpp>
 #include "gui/renderer.hpp"
 #include "hooks/hooking.hpp"
+#include "logger/log_helper.hpp"
 #include "memory/pointers.hpp"
-#include "logging/logger.hpp"
 #include "gui/gui.hpp"
 
 
 static DWORD WINAPI MainThread(LPVOID)
 {
-    Logger::Log(INFO, "Initializing...");
-    
-    if (!g_pointers.Init())
+    g_ProjectPath = std::filesystem::path(std::getenv("appdata")) / "NMM";
+    if (!std::filesystem::exists(g_ProjectPath))
+        std::filesystem::create_directories(g_ProjectPath);
+
+    LogHelper::Init("NoMansMenu", g_ProjectPath / "cout.log");
+    LOG(INFO) << "Initializing...";
+
+    if (!g_Pointers.Init())
         goto unload;
 
     if (!Renderer::Init())
@@ -22,18 +27,20 @@ static DWORD WINAPI MainThread(LPVOID)
 
 	GUI::Init();
 
-    // test loop
     while (g_Running)
     {
         if (GetAsyncKeyState(VK_INSERT) & 1)
             GUI::Toggle();
-        Sleep(10);
+
+        std::this_thread::sleep_for(10ms);
     }
 
 unload:
-    Logger::Log(INFO, "Shutting down");
+    LOG(INFO) << "Shutting down";
     Renderer::Destroy();
     Hooking::Destroy();
+    LogHelper::Destroy();
+    CloseHandle(g_MainThread);
     FreeLibraryAndExitThread(g_DllInstance, EXIT_SUCCESS);
     return EXIT_SUCCESS;
 }

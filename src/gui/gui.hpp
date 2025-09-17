@@ -1,6 +1,7 @@
 #pragma once
 #include <common.hpp>
 #include <vulkan/vulkan.h>
+#include "renderer.hpp"
 
 using GuiCallBack = std::function<void()>;
 
@@ -23,6 +24,7 @@ public:
 	{
 		GetInstance().m_IsOpen ^= true;
 		GetInstance().OverrideMouse();
+		Renderer::SetSafeToRender(GetInstance().m_IsOpen);
 	}
 
 	static bool IsOpen()
@@ -62,6 +64,7 @@ public:
 	static void Close()
 	{
 		GetInstance().CloseImpl();
+		Renderer::SetSafeToRender(false);
 	}
 
 private:
@@ -70,6 +73,7 @@ private:
 	void CloseImpl();
 	void DrawImpl();
 	bool AddTabImpl(const std::string& name, GuiCallBack&& callback, std::optional<std::string> hint);
+
 	ImVec2 m_WindowSize;
 	ImVec2 m_WindowPos = ImVec2(0.1f, 0.1f);
 	std::vector<Tab> m_Tabs;
@@ -81,6 +85,6 @@ private:
 		return i;
 	}
 
-	bool m_IsOpen = true;
+	bool m_IsOpen;
 };
 

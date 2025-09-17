@@ -14,9 +14,4 @@ namespace Hooks
 	{
 		extern LRESULT WndProc(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lparam);
 	}
-
-	namespace Game
-	{
-		void __fastcall LifeSupportHook(uintptr_t rax, uint32_t ecx);
-	}
 }

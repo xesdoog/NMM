@@ -20,15 +20,12 @@ namespace Hooks
 		const VkAllocationCallbacks* pAllocator,
 		VkSwapchainKHR* pSwapchain)
 	{
-		Logger::Log(DEBUG, "CreateSwapchainKHR called");
-		Logger::Log(DEBUG, std::format("pCreateInfo: 0x{:X}", (uintptr_t)pCreateInfo));
 		// what the fuck
 		if (pCreateInfo)
 		{
 			Renderer::VkSetDevice(device);
 			Renderer::VkCleanupRenderTarget();
 			Renderer::VkSetScreenSize(pCreateInfo->imageExtent);
-			Logger::Log(INFO, std::format("Swapchain created with size: {}x{}", pCreateInfo->imageExtent.width, pCreateInfo->imageExtent.height));
 		}
 
 		return BaseHook::Get<Vulkan::CreateSwapchainKHR, DetourHook<decltype(&CreateSwapchainKHR)>>()->Original()(device, pCreateInfo, pAllocator, pSwapchain);
@@ -92,12 +89,6 @@ namespace Hooks
 			return 1;
 		}
 
-		return CallWindowProc(g_pointers.WndProc, hWnd, uMsg, wParam, lParam);
-	}
-
-	void __fastcall Game::LifeSupportHook(uintptr_t rax, uint32_t ecx)
-	{
-		if (rax && Self::InfiniteLifeSupport)
-			*reinterpret_cast<uint32_t*>(rax + 0x18) = 100;
+		return CallWindowProc(g_Pointers.WndProc, hWnd, uMsg, wParam, lParam);
 	}
 }

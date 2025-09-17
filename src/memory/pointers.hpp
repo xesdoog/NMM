@@ -3,6 +3,7 @@
 #include <windows.h>
 #include "game/classes/currency.hpp"
 #include "byte_patches.hpp"
+#include "cave_patches.hpp"
 
 
 struct PointerData
@@ -17,12 +18,25 @@ struct PointerData
 	WNDPROC WndProc;
 
 	// Game
-	void* CurrencyInstruction; // mov ecx, [rax+0000B8C0]
-	void* LifeSupportInstruction; // mov [rax+18],ecx
 	Currency* PlayerCurrency;
+	void* CurrencyInstruction; // mov ecx, [rax+0000B8C0]
+	float* GroundSpeed; // movss xmm6,[NMS.exe+4D74068]
+	BytePatch PlayerHealthPatch;
 	BytePatch PlayerStaminaPatch;
-	BytePatch JetPackFuelPatch; // subss xmm0,xmm1
-	BytePatch JetPackFuelPatch2; // subss xmm0,xmm1 maxss xmm8,xmm1
+	BytePatch JetPackFuelPatch;
+	BytePatch JetPackFuelPatch2;
+	BytePatch LifeSupportPatch;
+	BytePatch EnvProtectionPatch;
+	BytePatch LaunchThrusterPatch;
+	BytePatch PulseEnginePatch;
+	BytePatch HyperDrivePatch;
+	BytePatch ShipLaserPatch;
+	BytePatch RocketCooldownPatch;
+	BytePatch InfMultitoolPatch;
+	BytePatch InfMiningBeamPatch;
+	BytePatch InfTerrainToolPatch;
+	CavePatch StarshipShieldPatch;
+	CavePatch OneHitKillsPatch;
 };
 
 struct Pointers : PointerData
@@ -32,4 +46,4 @@ struct Pointers : PointerData
 	void Restore();
 };
 
-inline Pointers g_pointers;
+inline Pointers g_Pointers;

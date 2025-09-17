@@ -1,7 +1,9 @@
 #include "gui.hpp"
 #include "renderer.hpp"
+#include "settings.hpp"
 #include "memory/pointers.hpp"
 #include "game/features/self.hpp"
+#include "game/features/multitool.hpp"
 #include "game/features/ship.hpp"
 
 
@@ -12,10 +14,12 @@ void GUI::InitImpl() {
     SetWindowSize(size);
 
 	AddTab(ICON_FA_USER, [] { Self::Draw(); }, "Player");
+	AddTab(ICON_FA_CROSSHAIRS, [] { Multitool::Draw(); }, "Multitool");
 	AddTab(ICON_FA_SPACE_SHUTTLE, [] { Ship::Draw(); }, "Spaceship");
-	AddTab(ICON_FA_COG, [] { Ship::Draw(); }, "Settings");
+	AddTab(ICON_FA_COG, [] { Settings::Draw(); }, "Settings");
 
     Renderer::AddRendererCallBack([&] { Draw(); }, -1);
+    Toggle();
 }
 
 bool GUI::AddTabImpl(const std::string& name, GuiCallBack&& callback, std::optional<std::string> hint)
@@ -39,16 +43,17 @@ void GUI::DrawImpl()
     ImGui::SetNextWindowPos(m_WindowPos, ImGuiCond_Once);
     ImGui::SetNextWindowBgAlpha(0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+
     if (ImGui::Begin("##main", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground))
     {
         ImGui::SetNextWindowBgAlpha(0.8f);
         if (ImGui::BeginChild("##header", ImVec2(m_WindowSize.x - 10.0f, 70.0f), ImGuiChildFlags_Border))
         {
-            float textWidth = ImGui::CalcTextSize("NMS Test Trainer").x;
+            float textWidth = ImGui::CalcTextSize("No Man's Menu").x;
             float avail = ImGui::GetWindowWidth();
             ImGui::Dummy(ImVec2((avail - textWidth) * 0.5f, 1));
             ImGui::SameLine();
-            ImGui::Text("NMS Test Trainer");
+            ImGui::Text("No Man's Menu");
 
             if (ImGui::Button("Unload"))
                 g_Running = false;
@@ -88,7 +93,7 @@ void GUI::DrawImpl()
         if (m_ActiveTab.m_callback)
         {
             ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.1f, 0.1f, 0.1f, 0.8f));
-            if (ImGui::BeginChild("##tabfuncs", ImVec2(0, 0), ImGuiChildFlags_AutoResizeY | ImGuiChildFlags_Border))
+            if (ImGui::BeginChild("##tabfuncs", ImVec2(0, 0), ImGuiChildFlags_Border | ImGuiChildFlags_AutoResizeY))
                 m_ActiveTab.m_callback();
 
             ImGui::PopStyleColor();

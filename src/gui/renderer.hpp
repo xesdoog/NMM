@@ -5,7 +5,6 @@
 #include <map>
 #include <windows.h>
 #include <wrl/client.h>
-#include "logging/logger.hpp"
 
 
 #define REL(o)       \
@@ -42,6 +41,9 @@ public:
 		return GetInstance().InitImpl();
 	}
 
+	bool m_Initialized;
+	bool m_SafeToRender;
+
 	/**
 		* @brief Add a callback function to draw using ImGui
 		*
@@ -64,19 +66,22 @@ public:
 		GetInstance().AddWindowProcedureCallbackImpl(std::move(callback));
 	}
 
+	static void SetSafeToRender(bool toggle)
+	{
+		GetInstance().m_SafeToRender = toggle;
+	}
+
 	static void VkOnPresent(VkQueue queue, const VkPresentInfoKHR* pPresentInfo)
 	{
 		if (!queue)
 		{
-			Logger::Log(ERR, "Invalid Vulkan Queue!");
-
+			LOG(FATAL) << "Invalid Vulkan Queue!";
 			return;
 		}
 
 		if (!pPresentInfo)
 		{
-			Logger::Log(ERR, "Invalid Vulkan Present Info!");
-
+			LOG(FATAL) << "Invalid Vulkan Present Info!";
 			return;
 		}
 
@@ -94,8 +99,7 @@ public:
 	{
 		if (!device)
 		{
-			Logger::Log(ERR, "Invalid Vulkan Device!");
-
+			LOG(FATAL) << "Invalid Vulkan Device!";
 			return;
 		}
 
@@ -136,9 +140,6 @@ private:
 	}
 
 private:
-	bool m_Resizing;
-
-	ImFontAtlas m_FontAtlas;
 	VkPhysicalDevice m_VkPhysicalDevice;
 	VkInstance m_VkInstance;
 	VkAllocationCallbacks* m_VkAllocator = nullptr;

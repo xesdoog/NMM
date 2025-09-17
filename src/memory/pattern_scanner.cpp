@@ -1,7 +1,7 @@
 #include <future>
 #include "pattern_scanner.hpp"
+#include "pattern_cache.hpp"
 #include "module.hpp"
-#include "logging/logger.hpp"
 
 
 PatternScanner::PatternScanner(const Module* module) :
@@ -31,7 +31,7 @@ bool PatternScanner::Scan()
 	}
 	if (!scanSuccess)
 	{
-		Logger::Log(ERR, "Some patterns have not been found, continuing would be foolish.");
+		LOG(WARNING) << "Some patterns have not been found, continuing would be foolish.";
 	}
 	return scanSuccess;
 }
@@ -39,6 +39,17 @@ bool PatternScanner::Scan()
 bool PatternScanner::ScanInternal(const IPattern* pattern, PatternFunc func) const
 {
 	const auto signature = pattern->Signature();
+
+	if (PatternCache::IsInitialized())
+	{
+		auto offset = PatternCache::GetCachedOffset(pattern->Hash().Update(m_Module->Size()));
+		if (offset.has_value())
+		{
+			LOGF(INFO, "Using cached pattern [{}] : [{:X}] [Hash(): {:X}]", pattern->Name(), m_Module->Base() + offset.value(), pattern->Hash().Update(m_Module->Size()).m_Hash);
+			std::invoke(func, m_Module->Base() + offset.value());
+			return true;
+		}
+	}
 
 	for (auto i = m_Module->Base(); i < m_Module->End(); ++i)
 	{
@@ -57,12 +68,18 @@ bool PatternScanner::ScanInternal(const IPattern* pattern, PatternFunc func) con
 
 		if (found)
 		{
-			Logger::Log(INFO, std::format("Found pattern [{}] : [0x{:X}]", pattern->Name(), i));
+			LOGF(INFO, "Found pattern [{}] : [0x{:X}]", pattern->Name(), i);
 			std::invoke(func, i);
+
+			if (PatternCache::IsInitialized())
+			{
+				PatternCache::UpdateCachedOffset(pattern->Hash().Update(m_Module->Size()), i - m_Module->Base());
+			}
+
 			return true;
 		}
 	}
 
-	Logger::Log(WARN, std::format("Failed to find pattern {}", pattern->Name()));
+	LOGF(WARNING, "Failed to find pattern {}", pattern->Name());
 	return false;
 }

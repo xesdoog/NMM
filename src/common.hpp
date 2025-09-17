@@ -21,11 +21,21 @@
 #include <string_view>
 #include <thread>
 #include <vector>
-
-#include "Logging/Logger.hpp"
+#include <AsyncLogger/Logger.hpp>
 
 #undef Yield
 
+#define ICON_FA_COG               "\xEF\x80\x93"
+#define ICON_FA_CROSSHAIRS        "\xEF\x81\x9B"
+#define ICON_FA_HEART             "\xEF\x80\x84"
+#define ICON_FA_MONEY_BILL        "\xEF\x83\x96"
+#define ICON_FA_MONEY_BILL_1      "\xF3\x8F\x8F\x91"
+#define ICON_FA_SPACE_SHUTTLE     "\xEF\x86\x97"
+#define ICON_FA_USER_ASTRONAUT    "\xF3\x8F\x93\xBB"
+#define ICON_FA_USER              "\xEF\x80\x87"
+
+
+using namespace al;
 using namespace std::chrono_literals;
 using namespace std::string_literals;
 using namespace std::string_view_literals;
@@ -34,11 +44,4 @@ extern std::atomic<bool> g_Running;
 extern HINSTANCE g_DllInstance;
 extern HANDLE g_MainThread;
 extern DWORD g_MainThreadId;
-
-#define ICON_FA_HEART             "\xEF\x80\x84"
-#define ICON_FA_SPACE_SHUTTLE     "\xEF\x86\x97"
-#define ICON_FA_MONEY_BILL        "\xEF\x83\x96"
-#define ICON_FA_MONEY_BILL_1      "\xF3\x8F\x8F\x91"
-#define ICON_FA_COG               "\xEF\x80\x93"
-#define ICON_FA_USER_ASTRONAUT    "\xF3\x8F\x93\xBB"
-#define ICON_FA_USER              "\xEF\x80\x87"
+extern std::filesystem::path g_ProjectPath;

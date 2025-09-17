@@ -82,7 +82,7 @@ inline T Module::GetExport(const std::string_view symbolName) const
 		return m_Base.Add(funcOffsets[i]).As<T>();
 	}
 
-	Logger::Log(ERR, "Could not find export");
+	LOGF(FATAL, "Could not find export {} in module {}", symbolName, Name());
 	return nullptr;
 }
 
@@ -106,6 +106,6 @@ inline T Module::GetExport(int ordinal) const
 		return m_Base.Add(funcOffsets[i]).As<T>();
 	}
 
-	Logger::Log(ERR, "Could not find export");
+	LOG(FATAL) << "Failed to get module export!";
 	return nullptr;
 }

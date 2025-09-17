@@ -44,14 +44,14 @@ inline bool InlineHook::Enable()
 
     if (!m_Target || !m_Detour)
     {
-        Logger::Log(ERR, "InlineHook: invalid target");
+        LOG(FATAL) << "InlineHook: invalid target";
         return false;
     }
 
     BYTE* pTarget = reinterpret_cast<BYTE*>(m_Target);
 
     if (m_OverwriteSize == 0 || m_OverwriteSize > sizeof(m_OriginalBytes)) {
-        Logger::Log(ERR, "InlineHook: bad overwrite size");
+        LOG(FATAL) << "InlineHook: bad overwrite size";
         return false;
     }
 
@@ -65,7 +65,7 @@ inline bool InlineHook::Enable()
 
     if (!stub)
     {
-        Logger::Log(ERR, "InlineHook: VirtualAllocNear/Alloc failed");
+        LOG(FATAL) << "InlineHook: Failed to allocate memory for hook.";
         return false;
     }
 
@@ -102,7 +102,7 @@ inline bool InlineHook::Enable()
     if (!VirtualProtect(stub, stubSize, PAGE_EXECUTE_READWRITE, &oldProt))
     {
         VirtualFree(stub, 0, MEM_RELEASE);
-        Logger::Log(ERR, "InlineHook: VirtualProtect(stub) failed");
+        LOG(FATAL) << "InlineHook: VirtualProtect(stub) failed";
         return false;
     }
 
@@ -112,14 +112,14 @@ inline bool InlineHook::Enable()
 
     if (rel < INT32_MIN || rel > INT32_MAX) {
         VirtualFree(stub, 0, MEM_RELEASE);
-        Logger::Log(ERR, "InlineHook: stub out of relative jmp range");
+        LOG(FATAL) << "InlineHook: stub out of relative jmp range";
         return false;
     }
 
     if (!VirtualProtect(pTarget, m_OverwriteSize, PAGE_EXECUTE_READWRITE, &oldProt))
     {
         VirtualFree(stub, 0, MEM_RELEASE);
-        Logger::Log(ERR, "InlineHook: VirtualProtect(target) failed");
+        LOG(FATAL) << "InlineHook: VirtualProtect(target) failed";
         return false;
     }
 
@@ -151,7 +151,7 @@ inline bool InlineHook::Disable()
     DWORD oldProt;
     if (!VirtualProtect(pTarget, m_OverwriteSize, PAGE_EXECUTE_READWRITE, &oldProt))
     {
-        Logger::Log(ERR, "InlineHook: VirtualProtect(target) failed during Disable");
+        LOG(FATAL) << "InlineHook: VirtualProtect(target) failed during Disable";
         return false;
     }
 

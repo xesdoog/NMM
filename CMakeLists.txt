@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.20.x)
 
-project(NMS_TEST)
+project(NoMansMenu)
 
 include(FetchContent)
+include(cmake/async-logger.cmake)
 include(cmake/vulkan.cmake)
 include(cmake/minhook.cmake)
 include(cmake/imgui.cmake)
@@ -17,7 +18,7 @@ set(DEPS_DIR "${PROJECT_SOURCE_DIR}/deps")
 
 add_library(${PROJECT_NAME} MODULE ${SRC_FILES})
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 23)
-target_precompile_headers(${PROJECT_NAME} PUBLIC "${SRC_DIR}/util/common.hpp")
+target_precompile_headers(${PROJECT_NAME} PUBLIC "${SRC_DIR}/common.hpp")
 
 message(STATUS "Setting up include directories.")
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -33,6 +34,7 @@ target_include_directories(imgui PRIVATE "${vulkan_SOURCE_DIR}/include")
 message(STATUS "Setting up linked libraries")
 target_link_libraries(${PROJECT_NAME} PRIVATE
     "${DEPS_DIR}/vulkan-1.lib"
+    AsyncLogger
     minhook
     imgui
 )

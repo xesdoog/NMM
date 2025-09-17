@@ -1,7 +1,13 @@
 #pragma once
 #include "game/classes/currency.hpp"
-#include "memory/pointers.hpp"
 
+
+struct GenericUIItems
+{
+	const char* name;
+	std::function<uint32_t()> GetValue;
+	std::function<void(uint32_t)> SetValue;
+};
 
 class Self
 {
@@ -15,11 +21,23 @@ public:
 	static void SetUnits(uint32_t amount);
 	static void SetNanites(uint32_t amount);
 	static void SetQuicksilver(uint32_t amount);
+	static void ToggleInfiniteJetpack(bool toggle);
 	static void DrawMain();
-	static void DrawResources();
+	// static void DrawSpawner();
 	static void Draw();
 
-	static inline bool InfiniteJetpack = false;
-	static inline bool InfiniteStamina = false;
-	static inline bool InfiniteLifeSupport = false;
+	static inline std::vector<GenericUIItems> m_CurrencyScalars = {
+		{ "Units", &Self::GetUnits, &Self::SetUnits },
+		{ "Nanites", &Self::GetNanites, &Self::SetNanites },
+		{ "Quicksilver", &Self::GetQuicksilver, &Self::SetQuicksilver }
+	};
+
+	static inline bool InfiniteHealth;
+	static inline bool InfiniteStamina;
+	static inline bool InfiniteJetpack;
+	static inline bool InfiniteLifeSupport;
+	static inline bool InfiniteEnvProtection;
+
+	static inline float DefaultGroundSpeed = 4.400000095;
+	static inline float GroundSpeed = DefaultGroundSpeed;
 };
