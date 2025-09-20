@@ -12,10 +12,10 @@ ___
 | Infinite Stamina | Infinite Terrain Manipulator | Infinite Launch Thrusters |
 | Infinite Jetpack | Infinite Ammo | Infinite Pulse Engine |
 | Infinite Life Support | Infinite Grenades | Infinite Hyperdrive |
-| Infinite Environmental Protection | OneHit Kills | No Weapon Overheat (lasers & rockets) |
+| Infinite Environmental Protection | One Hit Kill | No Weapon Overheat (lasers & rockets) |
 | Infinite Exosuit Shields | No Mining Beam Overheat | Unlock All Corvette Parts |
-| Free Crafting |  | ---------- |
-| Set Currency (Units, Nanites, Quicksilver) |  | ---------- |
+| Free Crafting |  |  |
+| Set Currency (Units, Nanites, Quicksilver) |  |  |
 
 ## Credits
 
