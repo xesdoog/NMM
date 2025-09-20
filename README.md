@@ -30,7 +30,13 @@ ___
 - [Yimura](https://github.com/Yimura), the author of the template this repository was generated from.
 - [Stackoverflow](https://stackoverflow.com) because I'm dumb.
 
-## Known Issues
+### Known Issues
 
 - **First ever** injection tanks your CPU 🥴 After that, patterns get cached and the menu loads instantly.
 - Sometimes, initial injection fails with `Invalid Vulkan Device` error. Restarting the game and re-injecting the DLL works. Not sure how to fix this.
+
+### TODO
+
+- [ ] Add more stuff and hopefully make sense of some of this game's huge classes (Im not a reverse-engineer. [HELP](https://www.youtube.com/watch?v=zw8TCw42hZo)).
+- [ ] Add a GitHub workflow to compile the project and upload a binary.
+- [ ] Add serializable settings *(checkbox states, maybe themes and UI stuff?)*.
