@@ -1,47 +1,55 @@
 #include "self.hpp"
 #include "memory/pointers.hpp"
-#include "util/format_money.hpp"
+#include "util/format_uint.hpp"
 
 
 uint32_t CurrencyStep = 1e3;
 uint32_t CurrencyStepFast = 1e5;
 
-uint32_t Self::GetCurrency(uint32_t Currency::* field) {
+uint32_t Self::GetCurrency(uint32_t Currency::* field)
+{
 	return g_Pointers.PlayerCurrency ? g_Pointers.PlayerCurrency->*field : 0;
 }
 
-void Self::SetCurrency(uint32_t Currency::* field, uint32_t value) {
+void Self::SetCurrency(uint32_t Currency::* field, uint32_t value)
+{
 	if (g_Pointers.PlayerCurrency)
 		g_Pointers.PlayerCurrency->*field = value;
 }
 
-uint32_t Self::GetUnits() {
+uint32_t Self::GetUnits()
+{
 	return GetCurrency(&Currency::Units);
 }
 
-uint32_t Self::GetNanites() {
+uint32_t Self::GetNanites()
+{
 	return GetCurrency(&Currency::Nanites);
 }
 
-uint32_t Self::GetQuicksilver() {
+uint32_t Self::GetQuicksilver()
+{
 	return GetCurrency(&Currency::Quicksilver);
 }
 
-void Self::SetUnits(uint32_t amount) {
+void Self::SetUnits(uint32_t amount)
+{
 	SetCurrency(&Currency::Units, amount);
 }
 
-void Self::SetNanites(uint32_t amount) {
+void Self::SetNanites(uint32_t amount)
+{
 	SetCurrency(&Currency::Nanites, amount);
 }
 
-void Self::SetQuicksilver(uint32_t amount) {
+void Self::SetQuicksilver(uint32_t amount)
+{
 	SetCurrency(&Currency::Quicksilver, amount);
 }
 
 void Self::ToggleInfiniteJetpack(bool toggle)
 {
-	if (!g_Pointers.JetPackFuelPatch || !g_Pointers.JetPackFuelPatch2)
+	if (!g_Pointers.JetPackFuelPatch && !g_Pointers.JetPackFuelPatch2)
 		return;
 
 	if (toggle)
@@ -55,7 +63,6 @@ void Self::ToggleInfiniteJetpack(bool toggle)
 		g_Pointers.JetPackFuelPatch2->Restore();
 	}
 }
-
 
 void Self::DrawMain()
 {
@@ -72,6 +79,9 @@ void Self::DrawMain()
 
 	if (ImGui::Checkbox("Infinite Environmental Protection", &InfiniteEnvProtection) && g_Pointers.EnvProtectionPatch)
 		InfiniteEnvProtection ? g_Pointers.EnvProtectionPatch->Apply() : g_Pointers.EnvProtectionPatch->Restore();
+
+	if (ImGui::Checkbox("Infinite Exosuit Shields", &InfiniteExosuitShields))
+		InfiniteExosuitShields ? g_Pointers.ExosuitShieldsPatch->Apply() : g_Pointers.ExosuitShieldsPatch->Restore();
 
 	if (ImGui::Checkbox("Infinite Jetpack", &InfiniteJetpack))
 		ToggleInfiniteJetpack(&InfiniteJetpack);
@@ -94,23 +104,31 @@ void Self::DrawMain()
 	}
 
 	ImGui::Spacing();
-	ImGui::SeparatorText(ICON_FA_MONEY_BILL);
+	ImGui::SeparatorText("Crafting");
 	ImGui::Spacing();
 
-	if (!g_Pointers.PlayerCurrency) {
-		ImGui::TextColored(ImVec4(1.0f, 0.01f, 0.01f, 0.9f), "Currency data is not available! Try opening your inventory.");
+	if (ImGui::Checkbox("Free Crafting", &FreeCrafting) && g_Pointers.FreeCraftingPatch)
+		FreeCrafting ? g_Pointers.FreeCraftingPatch->Apply() : g_Pointers.FreeCraftingPatch->Restore();
+
+	ImGui::Spacing();
+	ImGui::SeparatorText("Currency");
+	ImGui::Spacing();
+
+	if (!g_Pointers.PlayerCurrency)
+	{
+		ImGui::TextColored(ImVec4(0.1f, 0.3f, 0.9f, 0.9f), "Currency data is not available! Try opening your inventory.");
 		return;
 	}
 
-	for (const auto& item : m_CurrencyScalars) {
+	for (const auto& item : m_CurrencyScalars)
+	{
 		uint32_t value = item.GetValue();
 		ImGui::Spacing();
 
 		if (ImGui::InputScalar(item.name, ImGuiDataType_U32, &value, &CurrencyStep, &CurrencyStepFast))
 			item.SetValue(value);
 
-		if (ImGui::IsItemHovered())
-			ImGui::SetTooltip(FormatMoney(value).c_str());
+		Tooltip(FormatUint(value).c_str());
 	}
 }
 

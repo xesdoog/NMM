@@ -10,8 +10,6 @@
 #include "hooks/hooks.hpp"
 #include "fonts/Fonts.hpp"
 
-#define IMGUI_DEFINE_MATH_OPERATORS
-
 
 Renderer::Renderer() :
 	m_Initialized(false),
@@ -29,16 +27,26 @@ void Renderer::DestroyImpl()
 		return;
 
 	GUI::Close();
-	SetWindowLongPtr(g_Pointers.Hwnd, GWLP_WNDPROC, (LONG_PTR)g_Pointers.WndProc);
-	vkDeviceWaitIdle(m_VkDevice);
 
-	VkCleanupRenderTarget();
-	vkDestroyDescriptorPool(m_VkDevice, m_VkDescriptorPool, m_VkAllocator);
-	vkDeviceWaitIdle(m_VkDevice);
+	if (const VkResult result = vkDeviceWaitIdle(m_VkDevice); result == VK_ERROR_DEVICE_LOST)
+		LOG(WARNING) << "Device lost!";
 
 	ImGui_ImplVulkan_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
+
+	VkCleanupRenderTarget();
+
+	if (m_VkDescriptorPool)
+	{
+		vkDestroyDescriptorPool(m_VkDevice, m_VkDescriptorPool, m_VkAllocator);
+		m_VkDescriptorPool = VK_NULL_HANDLE;
+	}
+
+	if (g_Pointers.Hwnd && g_Pointers.WndProc)
+		SetWindowLongPtr(g_Pointers.Hwnd, GWLP_WNDPROC, (LONG_PTR)g_Pointers.WndProc);
+
+	m_Initialized = false;
 }
 
 
@@ -55,6 +63,7 @@ bool Renderer::InitImpl()
 		LOG(FATAL) << "Failed to get window procedure!";
 		return false;
 	}
+
 	SetWindowLongPtr(g_Pointers.Hwnd, GWLP_WNDPROC, (LONG_PTR)&Hooks::Window::WndProc);
 
 	VkInstanceCreateInfo CreateInfo = {};
@@ -165,6 +174,7 @@ bool Renderer::InitImpl()
 	ImGui_ImplWin32_Init(g_Pointers.Hwnd);
 	LOG(INFO) << "Vulkan renderer has finished initializing.";
 
+	GUI::Init();
 	m_Initialized = true;
 	return true;
 }
@@ -175,7 +185,7 @@ void Renderer::VkCreateRenderTarget(VkDevice device, VkSwapchainKHR swapchain)
 	if (const VkResult result = vkGetSwapchainImagesKHR(device, swapchain, &uImageCount, NULL))
 	{
 		LOG(WARNING) << "vkGetSwapchainImagesKHR failed";
-		m_SafeToRender = false;
+		GUI::Close();
 		return;
 	}
 
@@ -183,7 +193,7 @@ void Renderer::VkCreateRenderTarget(VkDevice device, VkSwapchainKHR swapchain)
 	if (const VkResult result = vkGetSwapchainImagesKHR(device, swapchain, &uImageCount, BackBuffers))
 	{
 		LOG(WARNING) << "vkGetSwapchainImagesKHR 2 failed";
-		m_SafeToRender = false;
+		GUI::Close();
 		return;
 	}
 
@@ -202,7 +212,7 @@ void Renderer::VkCreateRenderTarget(VkDevice device, VkSwapchainKHR swapchain)
 			if (const VkResult result = vkCreateCommandPool(device, &info, m_VkAllocator, &fd->CommandPool))
 			{
 				LOG(WARNING) << "vkCreateCommandPool failed";
-				m_SafeToRender = false;
+				GUI::Close();
 				return;
 			}
 		}
@@ -216,7 +226,7 @@ void Renderer::VkCreateRenderTarget(VkDevice device, VkSwapchainKHR swapchain)
 			if (const VkResult result = vkAllocateCommandBuffers(device, &info, &fd->CommandBuffer))
 			{
 				LOG(WARNING) << "vkAllocateCommandBuffers failed";
-				m_SafeToRender = false;
+				GUI::Close();
 				return;
 			}
 		}
@@ -227,7 +237,7 @@ void Renderer::VkCreateRenderTarget(VkDevice device, VkSwapchainKHR swapchain)
 			if (const VkResult result = vkCreateFence(device, &info, m_VkAllocator, &fd->Fence))
 			{
 				LOG(WARNING) << "vkCreateFence failed";
-				m_SafeToRender = false;
+				GUI::Close();
 				return;
 			}
 		}
@@ -237,14 +247,14 @@ void Renderer::VkCreateRenderTarget(VkDevice device, VkSwapchainKHR swapchain)
 			if (const VkResult result = vkCreateSemaphore(device, &info, m_VkAllocator, &fsd->ImageAcquiredSemaphore))
 			{
 				LOG(WARNING) << "vkCreateSemaphore failed";
-				m_SafeToRender = false;
+				GUI::Close();
 				return;
 			}
 
 			if (const VkResult result = vkCreateSemaphore(device, &info, m_VkAllocator, &fsd->RenderCompleteSemaphore))
 			{
 				LOG(WARNING) << "vkCreateSemaphore 2 failed";
-				m_SafeToRender = false;
+				GUI::Close();
 				return;
 			}
 		}
@@ -280,7 +290,7 @@ void Renderer::VkCreateRenderTarget(VkDevice device, VkSwapchainKHR swapchain)
 		if (const VkResult result = vkCreateRenderPass(device, &info, m_VkAllocator, &m_VkRenderPass))
 		{
 			LOG(WARNING) << "vkCreateRenderPass failed";
-			m_SafeToRender = false;
+			GUI::Close();
 			return;
 		}
 	}
@@ -304,7 +314,7 @@ void Renderer::VkCreateRenderTarget(VkDevice device, VkSwapchainKHR swapchain)
 			if (const VkResult result = vkCreateImageView(device, &info, m_VkAllocator, &fd->BackbufferView))
 			{
 				LOG(WARNING) << "vkCreateImageView failed";
-				m_SafeToRender = false;
+				GUI::Close();
 				return;
 			}
 		}
@@ -326,7 +336,7 @@ void Renderer::VkCreateRenderTarget(VkDevice device, VkSwapchainKHR swapchain)
 			if (const VkResult result = vkCreateFramebuffer(device, &info, m_VkAllocator, &fd->Framebuffer))
 			{
 				LOG(WARNING) << "vkCreateFramebuffer failed";
-				m_SafeToRender = false;
+				GUI::Close();
 				return;
 			}
 		}
@@ -334,22 +344,35 @@ void Renderer::VkCreateRenderTarget(VkDevice device, VkSwapchainKHR swapchain)
 
 	if (!m_VkDescriptorPool)
 	{
-		constexpr VkDescriptorPoolSize pool_sizes[] = { {VK_DESCRIPTOR_TYPE_SAMPLER, 1000}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000}, {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000}, {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000}, {VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000}, {VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000}, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000}, {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000}, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000}, {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000}, {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000} };
+		constexpr VkDescriptorPoolSize pool_sizes[] = {
+			{ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
+			{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
+		};
 
 		VkDescriptorPoolCreateInfo pool_info = {};
 		pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-		pool_info.maxSets = 1000 * IM_ARRAYSIZE(pool_sizes);
-		pool_info.poolSizeCount = (uint32_t)IM_ARRAYSIZE(pool_sizes);
+		pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT | VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT_EXT;
+		pool_info.maxSets = 1000 * (uint32_t)std::size(pool_sizes);
+		pool_info.poolSizeCount = (uint32_t)std::size(pool_sizes);
 		pool_info.pPoolSizes = pool_sizes;
 
-		if (const VkResult result = vkCreateDescriptorPool(device, &pool_info, m_VkAllocator, &m_VkDescriptorPool))
+		if (vkCreateDescriptorPool(device, &pool_info, m_VkAllocator, &m_VkDescriptorPool) != VK_SUCCESS)
 		{
-			LOG(WARNING) << "vkCreateDescriptorPool failed";
-			m_SafeToRender = false;
+			LOG(FATAL) << "Failed to create descriptor pool";
+			GUI::Close();
 			return;
 		}
 	}
+
 }
 
 void Renderer::VkCleanupRenderTarget()
@@ -443,15 +466,16 @@ void Renderer::VkOnPresentImpl(VkQueue queue, const VkPresentInfoKHR* pPresentIn
 
     if (!m_VkDevice)
     {
-		LOG(WARNING) << "Invalid VkDevice";
+		LOG(FATAL) << "Invalid VkDevice";
+		GUI::Close();
         return;
     }
 
     if (!ImGui::GetCurrentContext())
     {
-        ImGui::CreateContext();
-		Fonts::Load();
-        ImGui_ImplWin32_Init(g_Pointers.Hwnd);
+		LOG(FATAL) << "Failed to get ImGui context.";
+		GUI::Close();
+		return;
     }
 
     VkQueue GraphicQueue = VK_NULL_HANDLE;
@@ -463,27 +487,6 @@ void Renderer::VkOnPresentImpl(VkQueue queue, const VkPresentInfoKHR* pPresentIn
         if (m_VkFrames[0].Framebuffer == VK_NULL_HANDLE)
         {
             VkCreateRenderTarget(m_VkDevice, swapchain);
-
-            if (!ImGui::GetIO().BackendRendererUserData)
-            {
-                ImGui_ImplVulkan_InitInfo init_info = {};
-                init_info.Instance = m_VkInstance;
-                init_info.PhysicalDevice = m_VkPhysicalDevice;
-                init_info.Device = m_VkDevice;
-                init_info.QueueFamily = m_VkQueueFamily;
-                vkGetDeviceQueue(m_VkDevice, m_VkQueueFamily, 0, &GraphicQueue);
-                init_info.Queue = GraphicQueue;
-                init_info.PipelineCache = m_VkPipelineCache;
-                init_info.DescriptorPool = m_VkDescriptorPool;
-                init_info.Subpass = 0;
-                init_info.MinImageCount = m_VkMinImageCount;
-                init_info.ImageCount = m_VkMinImageCount;
-                init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-                init_info.Allocator = m_VkAllocator;
-                init_info.CheckVkResultFn = nullptr;
-                init_info.RenderPass = m_VkRenderPass;
-                ImGui_ImplVulkan_Init(&init_info);
-            }
         }
 
         ImGui_ImplVulkanH_Frame* fd = &m_VkFrames[pPresentInfo->pImageIndices[i]];
@@ -491,23 +494,20 @@ void Renderer::VkOnPresentImpl(VkQueue queue, const VkPresentInfoKHR* pPresentIn
         {
             if (const VkResult result = vkWaitForFences(m_VkDevice, 1, &fd->Fence, VK_TRUE, ~0ull); result != VK_SUCCESS)
             {
-				LOG(WARNING) << "vkWaitForFences failed";
-				m_SafeToRender = false;
+				LOG(WARNING) << "vkWaitForFences failed with result: " << result;
 				return;
             }
 
             if (const VkResult result = vkResetFences(m_VkDevice, 1, &fd->Fence); result != VK_SUCCESS)
             {
 				LOG(WARNING) << "vkResetFences failed";
-				m_SafeToRender = false;
                 return;
             }
         }
         {
             if (const VkResult result = vkResetCommandBuffer(fd->CommandBuffer, 0); result != VK_SUCCESS)
             {
-				LOG(WARNING) << "vkResetCommandBuffer failed";
-				m_SafeToRender = false;
+				LOG(WARNING) << "vkResetCommandBuffer failed with result: " << result;
                 return;
             }
 
@@ -517,8 +517,8 @@ void Renderer::VkOnPresentImpl(VkQueue queue, const VkPresentInfoKHR* pPresentIn
 
             if (const VkResult result = vkBeginCommandBuffer(fd->CommandBuffer, &info); result != VK_SUCCESS)
             {
-				LOG(WARNING) << "vkBeginCommandBuffer failed";
-				m_SafeToRender = false;
+				LOG(WARNING) << "vkBeginCommandBuffer failed with result: " << result;
+				GUI::Close();
                 return;
             }
         }
@@ -541,6 +541,26 @@ void Renderer::VkOnPresentImpl(VkQueue queue, const VkPresentInfoKHR* pPresentIn
             vkCmdBeginRenderPass(fd->CommandBuffer, &info, VK_SUBPASS_CONTENTS_INLINE);
         }
 
+		if (!ImGui::GetIO().BackendRendererUserData)
+		{
+			ImGui_ImplVulkan_InitInfo init_info = {};
+			init_info.Instance = m_VkInstance;
+			init_info.PhysicalDevice = m_VkPhysicalDevice;
+			init_info.Device = m_VkDevice;
+			init_info.QueueFamily = m_VkQueueFamily;
+			init_info.Queue = GraphicQueue;
+			init_info.PipelineCache = m_VkPipelineCache;
+			init_info.DescriptorPool = m_VkDescriptorPool;
+			init_info.Subpass = 0;
+			init_info.MinImageCount = m_VkMinImageCount;
+			init_info.ImageCount = m_VkMinImageCount;
+			init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+			init_info.Allocator = m_VkAllocator;
+			init_info.CheckVkResultFn = nullptr;
+			init_info.RenderPass = m_VkRenderPass;
+			ImGui_ImplVulkan_Init(&init_info);
+		}
+
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
@@ -560,15 +580,14 @@ void Renderer::VkOnPresentImpl(VkQueue queue, const VkPresentInfoKHR* pPresentIn
             {
                 VkSubmitInfo info = {};
                 info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
                 info.pWaitDstStageMask = &stages_wait;
-
                 info.signalSemaphoreCount = 1;
                 info.pSignalSemaphores = &fsd->RenderCompleteSemaphore;
 
                 if (const VkResult result = vkQueueSubmit(queue, 1, &info, VK_NULL_HANDLE); result != VK_SUCCESS)
                 {
-					LOG(WARNING) << "vkQueueSubmit failed";
+					LOG(WARNING) << "vkQueueSubmit failed with result: [" << result << "]";
+					GUI::Close();
                     return;
                 }
             }
@@ -587,7 +606,8 @@ void Renderer::VkOnPresentImpl(VkQueue queue, const VkPresentInfoKHR* pPresentIn
 
                 if (const VkResult result = vkQueueSubmit(GraphicQueue, 1, &info, fd->Fence); result != VK_SUCCESS)
                 {
-					LOG(WARNING) << "vkQueueSubmit 2 failed";
+					LOG(WARNING) << "vkQueueSubmit 2 failed with result: [" << result << "]";
+					GUI::Close();
                     return;
                 }
             }
@@ -600,17 +620,16 @@ void Renderer::VkOnPresentImpl(VkQueue queue, const VkPresentInfoKHR* pPresentIn
             info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
             info.commandBufferCount = 1;
             info.pCommandBuffers = &fd->CommandBuffer;
-
             info.pWaitDstStageMask = stages_wait.data();
             info.waitSemaphoreCount = waitSemaphoresCount;
             info.pWaitSemaphores = pPresentInfo->pWaitSemaphores;
-
             info.signalSemaphoreCount = 1;
             info.pSignalSemaphores = &fsd->ImageAcquiredSemaphore;
 
             if (const VkResult result = vkQueueSubmit(GraphicQueue, 1, &info, fd->Fence); result != VK_SUCCESS)
             {
-				LOG(WARNING) << "vkQueueSubmit 3 failed";
+				LOG(WARNING) << "vkQueueSubmit 3 failed with result: [" << result << "]";
+				GUI::Close();
                 return;
             }
         }

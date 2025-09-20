@@ -11,4 +11,5 @@ public:
 	static inline bool InfinitePulseEngine;
 	static inline bool InfiniteHyperDrive;
 	static inline bool NoWeaponOverheat;
+	static inline bool UnlockAllCorvetteParts;
 };

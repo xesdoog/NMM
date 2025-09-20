@@ -4,7 +4,7 @@
 
 void Ship::ToggleWeaponsCooldown(bool toggle)
 {
-	if (!g_Pointers.ShipLaserPatch || !g_Pointers.RocketCooldownPatch)
+	if (!g_Pointers.ShipLaserPatch && !g_Pointers.RocketCooldownPatch)
 		return;
 
 	if (toggle)
@@ -37,4 +37,7 @@ void Ship::Draw()
 
 	if (ImGui::Checkbox("No Weapon Overheat", &NoWeaponOverheat))
 		ToggleWeaponsCooldown(&NoWeaponOverheat);
+
+	if (ImGui::Checkbox("Unlock All Corvette Parts", &UnlockAllCorvetteParts) && g_Pointers.UnlockVettePtsPatch)
+		UnlockAllCorvetteParts ? g_Pointers.UnlockVettePtsPatch->Apply() : g_Pointers.UnlockVettePtsPatch->Restore();
 }

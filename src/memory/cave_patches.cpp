@@ -9,8 +9,11 @@ CavePatches::Cave::Cave(uint8_t* target, std::span<const uint8_t> code)
     m_Code = std::make_unique<uint8_t[]>(m_CodeSize);
     memcpy(m_Code.get(), code.data(), m_CodeSize);
 
+    m_StolenSize = ComputeInstrSize(m_Target, 5, 16);
     m_Original = std::make_unique<uint8_t[]>(m_StolenSize);
     memcpy(m_Original.get(), m_Target, m_StolenSize);
+
+    // LOG(INFO) << "fucktard at " << static_cast<void*>(m_Target) << " stealing " << m_StolenSize << " goddamn bytes";
 }
 
 CavePatches::Cave::~Cave()
@@ -32,8 +35,12 @@ void CavePatches::Cave::Apply()
     }
 
     size_t allocSize = m_CodeSize + 16;
-    m_CaveMemory = VirtualAlloc(nullptr, allocSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-    if (!m_CaveMemory) {
+    m_CaveMemory = VirtualAllocNear(m_Target, allocSize);
+    if (!m_CaveMemory)
+        m_CaveMemory = VirtualAlloc(nullptr, allocSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+
+    if (!m_CaveMemory)
+    {
         LOG(FATAL) << "Failed to allocate memory for code cave patch!";
         return;
     }

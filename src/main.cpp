@@ -25,21 +25,21 @@ static DWORD WINAPI MainThread(LPVOID)
     if (!Hooking::Init())
         goto unload;
 
-	GUI::Init();
-
     while (g_Running)
     {
         if (GetAsyncKeyState(VK_INSERT) & 1)
             GUI::Toggle();
 
-        std::this_thread::sleep_for(10ms);
+        std::this_thread::yield();
     }
 
 unload:
-    LOG(INFO) << "Shutting down";
+    g_Running = false;
+
     Renderer::Destroy();
     Hooking::Destroy();
     LogHelper::Destroy();
+
     CloseHandle(g_MainThread);
     FreeLibraryAndExitThread(g_DllInstance, EXIT_SUCCESS);
     return EXIT_SUCCESS;

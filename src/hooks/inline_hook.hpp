@@ -149,6 +149,7 @@ inline bool InlineHook::Disable()
 
     BYTE* pTarget = reinterpret_cast<BYTE*>(m_Target);
     DWORD oldProt;
+
     if (!VirtualProtect(pTarget, m_OverwriteSize, PAGE_EXECUTE_READWRITE, &oldProt))
     {
         LOG(FATAL) << "InlineHook: VirtualProtect(target) failed during Disable";

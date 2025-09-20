@@ -1,22 +1,46 @@
 #include "gui.hpp"
 #include "renderer.hpp"
-#include "settings.hpp"
 #include "memory/pointers.hpp"
 #include "game/features/self.hpp"
 #include "game/features/multitool.hpp"
 #include "game/features/ship.hpp"
 
 
-void GUI::InitImpl() {
-	auto size = Renderer::GetScreenSize();
+void GUI::DrawSettingsImpl()
+{
+    if (ImGui::Checkbox("Unlock Menu Positioning", &m_Movable))
+        m_Movable ? m_MainWindowFlags &= ~ImGuiWindowFlags_NoMove : m_MainWindowFlags |= ImGuiWindowFlags_NoMove;
+
+    Tooltip("Allows you to drag and move the menu around.");
+
+    ImGui::SameLine();
+    ImGui::Spacing();
+    ImGui::SameLine();
+
+    if (ImGui::Button("Snap Back"))
+    {
+        m_Movable = false;
+        m_ShouldSnap = true;
+    }
+
+    Tooltip("Snaps the menu back to the top left corner and locks its position.");
+
+    ImGui::Spacing();
+    ImGui::SeparatorText("Theme");
+    ImGui::ShowStyleSelector("##styleselector");
+}
+
+void GUI::InitImpl()
+{
+    auto size = Renderer::GetScreenSize();
     size.width = std::max((int)size.width, 1920);
     size.height = std::max((int)size.height, 1080);
     SetWindowSize(size);
 
-	AddTab(ICON_FA_USER, [] { Self::Draw(); }, "Player");
-	AddTab(ICON_FA_CROSSHAIRS, [] { Multitool::Draw(); }, "Multitool");
-	AddTab(ICON_FA_SPACE_SHUTTLE, [] { Ship::Draw(); }, "Spaceship");
-	AddTab(ICON_FA_COG, [] { Settings::Draw(); }, "Settings");
+    AddTab(ICON_FA_USER, [] { Self::Draw(); }, "Player");
+    AddTab(ICON_FA_CROSSHAIRS, [] { Multitool::Draw(); }, "Multitool");
+    AddTab(ICON_FA_SPACE_SHUTTLE, [] { Ship::Draw(); }, "Starship");
+    AddTab(ICON_FA_COG, [] { DrawSettings(); }, "Settings");
 
     Renderer::AddRendererCallBack([&] { Draw(); }, -1);
     Toggle();
@@ -39,13 +63,20 @@ void GUI::DrawImpl()
     if (!m_IsOpen)
         return;
 
-    ImGui::SetNextWindowSize(m_WindowSize, ImGuiCond_Once);
-    ImGui::SetNextWindowPos(m_WindowPos, ImGuiCond_Once);
+    ImGui::SetNextWindowPos(m_WindowPos, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(m_WindowSize, ImGuiCond_Always);
+
+    if (m_ShouldSnap)
+    {
+        ImGui::SetNextWindowPos(m_WindowPos, ImGuiCond_Once);
+        m_ShouldSnap = false;
+    }
+
     ImGui::SetNextWindowBgAlpha(0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-
-    if (ImGui::Begin("##main", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground))
+    if (ImGui::Begin("##main", nullptr, m_MainWindowFlags))
     {
+
         ImGui::SetNextWindowBgAlpha(0.8f);
         if (ImGui::BeginChild("##header", ImVec2(m_WindowSize.x - 10.0f, 70.0f), ImGuiChildFlags_Border))
         {
@@ -57,6 +88,8 @@ void GUI::DrawImpl()
 
             if (ImGui::Button("Unload"))
                 g_Running = false;
+
+            Tooltip("WARNING: This currently crashes the game!");
         }
         ImGui::EndChild();
 
@@ -80,28 +113,30 @@ void GUI::DrawImpl()
                     else
                         SetActiveTab(tab.m_name, tab.m_callback, tab.m_hint);
                 }
-                if (ImGui::IsItemHovered() && tab.m_hint.has_value())
-                    ImGui::SetTooltip(tab.m_hint.value().c_str());
+                if (tab.m_hint.has_value())
+                    Tooltip(tab.m_hint.value().c_str());
+
                 ImGui::PopStyleColor();
             }
             ImGui::PopStyleVar();
         }
         ImGui::EndChild();
 
-        ImGui::SameLine();
-
         if (m_ActiveTab.m_callback)
         {
+            ImGui::SameLine();
+            float avail_x = ImGui::GetContentRegionAvail().x;
             ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.1f, 0.1f, 0.1f, 0.8f));
-            if (ImGui::BeginChild("##tabfuncs", ImVec2(0, 0), ImGuiChildFlags_Border | ImGuiChildFlags_AutoResizeY))
-                m_ActiveTab.m_callback();
-
-            ImGui::PopStyleColor();
+            ImGui::SetNextWindowSizeConstraints(ImVec2(avail_x, 60.f), ImVec2(avail_x, m_WindowSize.y * 0.6));
+            // an if statement here is redundant since ImGuiChildFlags_AlwaysAutoResize makes BeginChild always return true.
+            ImGui::BeginChild("##tabfuncs", ImVec2(0, 0), ImGuiChildFlags_Border | ImGuiChildFlags_AutoResizeY | ImGuiChildFlags_AlwaysAutoResize);
+            m_ActiveTab.m_callback();
             ImGui::EndChild();
+            ImGui::PopStyleColor();
         }
     }
-    ImGui::PopStyleVar();
     ImGui::End();
+    ImGui::PopStyleVar();
 }
 
 void GUI::OverrideMouse()
@@ -115,6 +150,10 @@ void GUI::OverrideMouse()
 
 void GUI::CloseImpl()
 {
+    Renderer::SetSafeToRender(false);
     m_IsOpen = false;
-    OverrideMouse();
+
+    auto& io = ImGui::GetIO();
+    io.MouseDrawCursor = false;
+    io.ConfigFlags |= ImGuiConfigFlags_NoMouse;
 }

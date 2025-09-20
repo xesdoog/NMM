@@ -1,6 +1,7 @@
 #pragma once
 
-struct Currency {
+struct Currency
+{
 	char pad_0000[0xB8BC];
 	uint32_t Units;       // 0xB8BC
 	uint32_t Nanites;     // 0xB8C0

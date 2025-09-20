@@ -27,16 +27,17 @@ public:
 	static void Draw();
 
 	static inline std::vector<GenericUIItems> m_CurrencyScalars = {
-		{ "Units", &Self::GetUnits, &Self::SetUnits },
-		{ "Nanites", &Self::GetNanites, &Self::SetNanites },
-		{ "Quicksilver", &Self::GetQuicksilver, &Self::SetQuicksilver }
-	};
+	    {"Units", &Self::GetUnits, &Self::SetUnits},
+	    {"Nanites", &Self::GetNanites, &Self::SetNanites},
+	    {"Quicksilver", &Self::GetQuicksilver, &Self::SetQuicksilver}};
 
 	static inline bool InfiniteHealth;
 	static inline bool InfiniteStamina;
 	static inline bool InfiniteJetpack;
 	static inline bool InfiniteLifeSupport;
 	static inline bool InfiniteEnvProtection;
+	static inline bool InfiniteExosuitShields;
+	static inline bool FreeCrafting;
 
 	static inline float DefaultGroundSpeed = 4.400000095;
 	static inline float GroundSpeed = DefaultGroundSpeed;

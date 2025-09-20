@@ -32,10 +32,18 @@ struct PointerData
 	BytePatch HyperDrivePatch;
 	BytePatch ShipLaserPatch;
 	BytePatch RocketCooldownPatch;
-	BytePatch InfMultitoolPatch;
 	BytePatch InfMiningBeamPatch;
+	BytePatch InfMiningBeamPatch2;
 	BytePatch InfTerrainToolPatch;
+	BytePatch ExosuitShieldsPatch;
+	BytePatch FreeCraftingPatch;
+	CavePatch InfBcAmmoPatch;
+	CavePatch InfBjAmmoPatch; // Blaze Javeline, not Blowjob
+	CavePatch InfNcAmmoPatch;
+	CavePatch InfGrenadesPatch;
+	CavePatch FillExosuitShields;
 	CavePatch StarshipShieldPatch;
+	CavePatch UnlockVettePtsPatch; // corvette parts
 	CavePatch OneHitKillsPatch;
 };
 

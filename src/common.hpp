@@ -1,5 +1,4 @@
 #pragma once
-#define IMGUI_DEFINE_MATH_OPERATORS
 
 #include <MinHook.h>
 #include <Windows.h>
@@ -23,7 +22,12 @@
 #include <vector>
 #include <AsyncLogger/Logger.hpp>
 
+#include "gui/imgui_helpers.hpp"
+
 #undef Yield
+
+#define IMGUI_DEFINE_MATH_OPERATORS
+#define IMGUI_VULKAN_DEBUG_REPORT
 
 #define ICON_FA_COG               "\xEF\x80\x93"
 #define ICON_FA_CROSSHAIRS        "\xEF\x81\x9B"

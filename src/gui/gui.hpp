@@ -5,7 +5,8 @@
 
 using GuiCallBack = std::function<void()>;
 
-struct Tab {
+struct Tab
+{
 	std::string m_name;
 	GuiCallBack m_callback;
 	std::optional<std::string> m_hint;
@@ -47,7 +48,8 @@ public:
 		GetInstance().DrawImpl();
 	}
 
-	static void SetActiveTab(std::string name, GuiCallBack tabfunc, std::optional<std::string> hint) {
+	static void SetActiveTab(std::string name, GuiCallBack tabfunc, std::optional<std::string> hint)
+	{
 		auto& tab = GetInstance().m_ActiveTab;
 		tab.m_name = name;
 		tab.m_callback = tabfunc;
@@ -56,15 +58,25 @@ public:
 			tab.m_hint = hint;
 	}
 
-	static void SetWindowSize(VkExtent2D gameWindowSize) {
+	static void SetWindowSize(VkExtent2D gameWindowSize)
+	{
 		ImVec2 size = ImVec2((float)gameWindowSize.width * 0.35f, (float)gameWindowSize.height - 40.0f);
 		GetInstance().m_WindowSize = size;
+	}
+
+	static ImVec2 GetWindowSize()
+	{
+		return GetInstance().m_WindowSize;
 	}
 
 	static void Close()
 	{
 		GetInstance().CloseImpl();
-		Renderer::SetSafeToRender(false);
+	}
+
+	static void DrawSettings()
+	{
+		GetInstance().DrawSettingsImpl();
 	}
 
 private:
@@ -72,11 +84,19 @@ private:
 	void OverrideMouse();
 	void CloseImpl();
 	void DrawImpl();
+	void DrawSettingsImpl();
 	bool AddTabImpl(const std::string& name, GuiCallBack&& callback, std::optional<std::string> hint);
+
+	bool m_Movable{ false };
+	bool m_ShouldSnap{ false };
+
+	static inline int m_MainWindowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove;
 
 	ImVec2 m_WindowSize;
 	ImVec2 m_WindowPos = ImVec2(0.1f, 0.1f);
+
 	std::vector<Tab> m_Tabs;
+
 	Tab m_ActiveTab;
 
 	static GUI& GetInstance()
