@@ -17,6 +17,13 @@ ___
 | Free Crafting |  |  |
 | Set Currency (Units, Nanites, Quicksilver) |  |  |
 
+## Usage
+
+- Compile the project *(will provide a pre-compiled binary at some point in the future)*. It will produce a binary: `NoMansMenu.dll`.
+- Start the game, preferably load into a save as well.
+- Use any injector and inject the DLL into `NMS.exe`.
+- Press `INSERT` to open/close the menu.
+
 ## Credits
 
 - [Blind Distortion](https://fearlessrevolution.com/memberlist.php?mode=viewprofile&u=107792&sid=6e14b7672f349c049f08797d36849609), the author of this [CheatEngine table](https://fearlessrevolution.com/viewtopic.php?t=30442) and contributors (BigJit, YoucefHam, the notorious gir489, ...).
