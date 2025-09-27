@@ -8,18 +8,20 @@
 #include "game/features/self.hpp"
 
 
-bool Pointers::Init() {
+bool Pointers::Init()
+{
     PatternCache::Init();
 
     auto mmgr = ModuleMgr();
-
-    if (!mmgr.LoadModules()) {
+    if (!mmgr.LoadModules())
+    {
         LOG(FATAL) << "Failed to load modules from PEB.";
         return false;
 	}
 
     const auto nms = mmgr.Get("NMS.exe");
-    if (!nms) {
+    if (!nms)
+    {
         LOG(FATAL) << "Could not find NMS.exe, is this No Man's Sky?";
         return false;
     }
@@ -69,7 +71,7 @@ bool Pointers::Init() {
         EnvProtectionPatch = BytePatches::Add(ptr.Add(7).As<std::uint8_t*>(), Nop<6>());
     });
 
-    constexpr auto exosuit_shield_ptrn = Pattern<"FF 4F 18 ?? 0F 10 05 06 ?? 7D 05 ?? 42 0F 11 84 B3 ?? 00 00 00">("ExosuitShields");
+    constexpr auto exosuit_shield_ptrn = Pattern<"FF 4F 18 ?? 0F 10 05 ?? ?? ?? ?? F3">("ExosuitShields");
     scanner.Add(exosuit_shield_ptrn, [this](PointerCalculator ptr) {
         ExosuitShieldsPatch = BytePatches::Add(ptr.As<uint8_t*>(), Nop<3>());
         /*
