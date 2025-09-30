@@ -4,7 +4,6 @@ class Multitool
 {
 public:
 	static void Draw();
-	static void ToggleInfiniteAmmo(bool toggle);
 
 	static inline bool InfiniteMiningBeam;
 	static inline bool NoMiningBeamOverheat;

@@ -1,5 +1,6 @@
 #pragma once
 #include <hde64.h>
+#include "byte_patches.hpp"
 
 
 static void FlushICache(void* addr, SIZE_T len)
@@ -59,6 +60,26 @@ constexpr std::array<uint8_t, N> Nop()
 inline std::vector<uint8_t> Nop(std::size_t size)
 {
     return std::vector<uint8_t>(size, 0x90);
+}
+
+static size_t InstrLen(uint8_t* addr, size_t maxBytes = 16)
+{
+	hde64s hs{};
+	size_t len = hde64_disasm(addr, &hs);
+
+    if (len == 0 || len > maxBytes)
+	{
+		LOGF(WARNING, "InstrLen: invalid length at {}", static_cast<void*>(addr));
+		return 1;
+	}
+
+	return len;
+}
+
+static BytePatch NopInstr(uint8_t* addr)
+{
+	auto len = InstrLen(addr);
+	return BytePatches::Add(addr, Nop(len));
 }
 
 static size_t ComputeInstrSize(uint8_t* addr, size_t minBytes = 5, size_t maxBytes = 16)

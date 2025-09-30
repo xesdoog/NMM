@@ -49,7 +49,6 @@ void Renderer::DestroyImpl()
 	m_Initialized = false;
 }
 
-
 bool Renderer::InitImpl()
 {
 	g_Pointers.Hwnd = FindWindowA(nullptr, "No Man's Sky");

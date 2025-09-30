@@ -30,7 +30,7 @@ static DWORD WINAPI MainThread(LPVOID)
         if (GetAsyncKeyState(VK_INSERT) & 1)
             GUI::Toggle();
 
-        std::this_thread::yield();
+        std::this_thread::sleep_for(5ms);
     }
 
 unload:

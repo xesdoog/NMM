@@ -45,6 +45,9 @@ struct PointerData
 	CavePatch StarshipShieldPatch;
 	CavePatch UnlockVettePtsPatch; // corvette parts
 	CavePatch OneHitKillsPatch;
+	CavePatch JetpackPowerPatch;
+	CavePatch JetpackPowerPatch1;
+	CavePatch JetpackPowerPatch2;
 };
 
 struct Pointers : PointerData

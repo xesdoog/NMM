@@ -47,44 +47,33 @@ void Self::SetQuicksilver(uint32_t amount)
 	SetCurrency(&Currency::Quicksilver, amount);
 }
 
-void Self::ToggleInfiniteJetpack(bool toggle)
-{
-	if (!g_Pointers.JetPackFuelPatch && !g_Pointers.JetPackFuelPatch2)
-		return;
-
-	if (toggle)
-	{
-		g_Pointers.JetPackFuelPatch->Apply();
-		g_Pointers.JetPackFuelPatch2->Apply();
-	}
-	else
-	{
-		g_Pointers.JetPackFuelPatch->Restore();
-		g_Pointers.JetPackFuelPatch2->Restore();
-	}
-}
-
 void Self::DrawMain()
 {
 	ImGui::Spacing();
 
-	if (ImGui::Checkbox("God Mode", &InfiniteHealth) && g_Pointers.PlayerHealthPatch)
-		InfiniteHealth ? g_Pointers.PlayerHealthPatch->Apply() : g_Pointers.PlayerHealthPatch->Restore();
+	Gui::PatchToggle("God Mode", InfiniteHealth, g_Pointers.PlayerHealthPatch);
 
-	if (ImGui::Checkbox("Infinite Stamina", &InfiniteStamina) && g_Pointers.PlayerStaminaPatch)
-		InfiniteStamina ? g_Pointers.PlayerStaminaPatch->Apply() : g_Pointers.PlayerStaminaPatch->Restore();
+	Gui::PatchToggle("Infinite Stamina", InfiniteStamina, g_Pointers.PlayerStaminaPatch);
 
-	if (ImGui::Checkbox("Infinite Life Support", &InfiniteLifeSupport) && g_Pointers.LifeSupportPatch)
-		InfiniteLifeSupport ? g_Pointers.LifeSupportPatch->Apply() : g_Pointers.LifeSupportPatch->Restore();
+	Gui::PatchToggle("Infinite Life Support", InfiniteLifeSupport, g_Pointers.LifeSupportPatch);
 
-	if (ImGui::Checkbox("Infinite Environmental Protection", &InfiniteEnvProtection) && g_Pointers.EnvProtectionPatch)
-		InfiniteEnvProtection ? g_Pointers.EnvProtectionPatch->Apply() : g_Pointers.EnvProtectionPatch->Restore();
+	Gui::PatchToggle("Infinite Environmental Protection", InfiniteEnvProtection, g_Pointers.EnvProtectionPatch);
 
-	if (ImGui::Checkbox("Infinite Exosuit Shields", &InfiniteExosuitShields))
-		InfiniteExosuitShields ? g_Pointers.ExosuitShieldsPatch->Apply() : g_Pointers.ExosuitShieldsPatch->Restore();
+	Gui::PatchToggle("Infinite Exosuit Shields", InfiniteExosuitShields, g_Pointers.ExosuitShieldsPatch);
 
-	if (ImGui::Checkbox("Infinite Jetpack", &InfiniteJetpack))
-		ToggleInfiniteJetpack(&InfiniteJetpack);
+	Gui::PatchToggle("Infinite Jetpack",
+		InfiniteJetpack,
+		g_Pointers.JetPackFuelPatch,
+		g_Pointers.JetPackFuelPatch2
+	);
+
+	Gui::PatchToggle("Super Jetpack",
+		SuperJetpack,
+		g_Pointers.JetpackPowerPatch,
+		g_Pointers.JetpackPowerPatch1,
+		g_Pointers.JetpackPowerPatch2
+	);
+	Gui::Tooltip("Greatly increases jetpack power.");
 
 	if (g_Pointers.GroundSpeed)
 	{
@@ -107,8 +96,7 @@ void Self::DrawMain()
 	ImGui::SeparatorText("Crafting");
 	ImGui::Spacing();
 
-	if (ImGui::Checkbox("Free Crafting", &FreeCrafting) && g_Pointers.FreeCraftingPatch)
-		FreeCrafting ? g_Pointers.FreeCraftingPatch->Apply() : g_Pointers.FreeCraftingPatch->Restore();
+	Gui::PatchToggle("Free Crafting", FreeCrafting, g_Pointers.FreeCraftingPatch);
 
 	ImGui::Spacing();
 	ImGui::SeparatorText("Currency");
@@ -127,8 +115,7 @@ void Self::DrawMain()
 
 		if (ImGui::InputScalar(item.name, ImGuiDataType_U32, &value, &CurrencyStep, &CurrencyStepFast))
 			item.SetValue(value);
-
-		Tooltip(FormatUint(value).c_str());
+		Gui::Tooltip(FormatUint(value).c_str());
 	}
 }
 

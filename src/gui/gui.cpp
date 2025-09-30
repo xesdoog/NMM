@@ -11,7 +11,7 @@ void GUI::DrawSettingsImpl()
     if (ImGui::Checkbox("Unlock Menu Positioning", &m_Movable))
         m_Movable ? m_MainWindowFlags &= ~ImGuiWindowFlags_NoMove : m_MainWindowFlags |= ImGuiWindowFlags_NoMove;
 
-    Tooltip("Allows you to drag and move the menu around.");
+    Gui::Tooltip("Allows you to drag and move the menu around.");
 
     ImGui::SameLine();
     ImGui::Spacing();
@@ -21,9 +21,10 @@ void GUI::DrawSettingsImpl()
     {
         m_Movable = false;
         m_ShouldSnap = true;
+		m_MainWindowFlags |= ImGuiWindowFlags_NoMove;
     }
 
-    Tooltip("Snaps the menu back to the top left corner and locks its position.");
+    Gui::Tooltip("Snaps the menu back to the top left corner and locks its position.");
 
     ImGui::Spacing();
     ImGui::SeparatorText("Theme");
@@ -68,7 +69,7 @@ void GUI::DrawImpl()
 
     if (m_ShouldSnap)
     {
-        ImGui::SetNextWindowPos(m_WindowPos, ImGuiCond_Once);
+        ImGui::SetNextWindowPos(m_WindowPos, ImGuiCond_Always);
         m_ShouldSnap = false;
     }
 
@@ -76,7 +77,6 @@ void GUI::DrawImpl()
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     if (ImGui::Begin("##main", nullptr, m_MainWindowFlags))
     {
-
         ImGui::SetNextWindowBgAlpha(0.8f);
         if (ImGui::BeginChild("##header", ImVec2(m_WindowSize.x - 10.0f, 70.0f), ImGuiChildFlags_Border))
         {
@@ -89,7 +89,7 @@ void GUI::DrawImpl()
             if (ImGui::Button("Unload"))
                 g_Running = false;
 
-            Tooltip("WARNING: This currently crashes the game!");
+            Gui::Tooltip("WARNING: This currently crashes the game!");
         }
         ImGui::EndChild();
 
@@ -114,7 +114,7 @@ void GUI::DrawImpl()
                         SetActiveTab(tab.m_name, tab.m_callback, tab.m_hint);
                 }
                 if (tab.m_hint.has_value())
-                    Tooltip(tab.m_hint.value().c_str());
+                    Gui::Tooltip(tab.m_hint.value().c_str());
 
                 ImGui::PopStyleColor();
             }

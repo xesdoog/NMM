@@ -4,7 +4,6 @@ class Ship
 {
 public:
 	static void Draw();
-	static void ToggleWeaponsCooldown(bool toggle);
 
 	static inline bool InfiniteShiels;
 	static inline bool InfiniteLaunchThrusters;

@@ -21,7 +21,6 @@ public:
 	static void SetUnits(uint32_t amount);
 	static void SetNanites(uint32_t amount);
 	static void SetQuicksilver(uint32_t amount);
-	static void ToggleInfiniteJetpack(bool toggle);
 	static void DrawMain();
 	// static void DrawSpawner();
 	static void Draw();
@@ -34,6 +33,7 @@ public:
 	static inline bool InfiniteHealth;
 	static inline bool InfiniteStamina;
 	static inline bool InfiniteJetpack;
+	static inline bool SuperJetpack;
 	static inline bool InfiniteLifeSupport;
 	static inline bool InfiniteEnvProtection;
 	static inline bool InfiniteExosuitShields;
