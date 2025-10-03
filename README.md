@@ -1,6 +1,6 @@
 # No Man's Menu
 
-<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/c1ed49cf-b44a-4c00-9972-c2b676fdd910" />
+![Screenshot 2025-10-03 221332](https://github.com/user-attachments/assets/5d4332de-e7aa-45c0-b444-c21731e2d8b4)
 
 ___
 
